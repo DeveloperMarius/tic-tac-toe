@@ -13,11 +13,16 @@ Anforderungen wurden vom Auftraggeber in Form eines PDF Dokuments definiert und 
 Den Entwicklern wurden verschiedene Überaufgaben zugeordnet:
 - Veronika: "AI" player, Dashboard
 - Marius: Network (Chat, Game) und DB (SQLite)
-- Sebastian: Game Engin (Rules und Player Management)
+- Sebastian: Game Engine (Rules und Player Management)
 
 Ebenfalls wurde ein GitHub Repository erstellt und den Entwickler Berechtigungen zugeordnet.
 
 ### SCRUM Meeting 31.01.2024 - @Veronika
+#### 1. Sprint (31.01.2024 - ?)
+- Marius: User Stories + Backlog 
+- Sebastian: Klassendiagrammen erstellen
+- Veronika: Scrum Dokumentation, Sequenzdiagramme erstellen
+
 
 
 ## Week 2
