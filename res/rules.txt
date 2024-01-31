@@ -1,0 +1,15 @@
+TikTakToe Rule Book
+
+    1. A fair coin toss determines the player who is making the first move.
+    2. The player who starts the game starts by placing an “X” in one of the unoccupied cells.
+    3. The other player places an “O” in one of the unoccupied cells.
+    4. The games ends when (a) the cells are occupied by “X”s or “O”s or when (b) a player has 3 of his symbols in a row. If neither player has 3 of his/her symbols in a row the game is a draw.
+The game grid looks like this:
+
+-------
+|  |  |
+-------
+|  |  |
+-------
+|  |  |
+-------
