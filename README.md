@@ -17,13 +17,19 @@ Den Entwicklern wurden verschiedene Überaufgaben zugeordnet:
 
 Ebenfalls wurde ein GitHub Repository erstellt und den Entwickler Berechtigungen zugeordnet.
 
-### SCRUM Meeting 31.01.2024 - @Veronika
-#### 1. Sprint (31.01.2024 - ?)
+### SCRUM Sprints - @Veronika
+#### 1. Sprint (31.01.2024 - 32.01.2024)
+Aufgabenverteilung Sprint 1:
 - Marius: User Stories + Backlog 
 - Sebastian: Klassendiagrammen erstellen
 - Veronika: Scrum Dokumentation, Sequenzdiagramme erstellen
 
+#### 2. Sprint (32.01.2024 - ?)
+Erfüllte Aufgaben von Sprint 1:
+- ...
 
+Aufgabenverteilung Sprint 2:
+- ...
 
 ## Week 2
 
