@@ -24,7 +24,7 @@ Aufgabenverteilung Sprint 1:
 - Sebastian: Klassendiagrammen erstellen
 - Veronika: Scrum Dokumentation, Sequenzdiagramme erstellen
 
-#### 2. Sprint (32.01.2024 - ?)
+#### 2. Sprint (31.01.2024 - ?)
 Erfüllte Aufgaben von Sprint 1:
 - ...
 
