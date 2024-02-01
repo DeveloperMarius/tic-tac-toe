@@ -1,0 +1,163 @@
+classDiagram
+  class Game {
+    - screen: pygame.Surface
+    - width: int
+    - height: int
+    - board: List[List[Symbol]]
+    - current_player: Player
+    - winner: Symbol
+    - game_over: bool
+    - players: List[Player]
+    - active_game: bool
+    - font: pygame.font.Font
+
+    + __init__(self, width: int, height: int)
+    + reset(self)
+    + update(self)
+    + draw(self)
+    + handle_events(self)
+    + switch_player(self)
+    + check_winner(self)
+    + is_board_full(self): bool
+    + start_game(self)
+    + end_game(self)
+  }
+
+  class Player {
+    - name: str
+    - symbol: Symbol
+    - game_stats: GameStats
+
+    + __init__(self, name: str, symbol: Symbol)
+    + make_move(self, game: Game, row: int, col: int)
+    + update_game_stats(self, winner: bool)
+  }
+
+  class HumanPlayer {
+    + make_move(self, game: Game, row: int, col: int)
+  }
+
+  class AIPlayer {
+    <<abstract>>
+    - move_calculator: Callable[[Game], Tuple[int, int]]
+
+    + __init__(self, name: str, symbol: Symbol, move_calculator: Callable[[Game], Tuple[int, int]])
+    + make_move(self, game: Game, row: int, col: int)
+  }
+
+  class EasyAIPlayer {
+
+  }
+
+  class HardAIPlayer {
+
+  }
+
+  class MultiplayerManager {
+    - gameLobbies: List[GameLobby]
+
+    + createLobby(self, name: str, max_players: int)
+    + joinLobby(self, lobby: GameLobby, player: Player)
+    + leaveLobby(self, lobby: GameLobby, player: Player)
+  }
+
+  class GameLobby {
+    - name: str
+    - max_players: int
+    - players: List[Player]
+
+    + __init__(self, name: str, max_players: int)
+    + addPlayer(self, player: Player)
+    + removePlayer(self, player: Player)
+    + startGame(self)
+  }
+
+  class MultiplayerGameLobby {
+    - multiplayerManager: multiplayerManager
+    - chat: Chat
+
+    + __init__(self, name: str, max_players: int, chat: Chat)
+    + sendChatMessage(self, message: str)
+  }
+
+  class Chat {
+    - messages: List[str]
+
+    + __init__(self)
+    + add_message(self, message: str)
+    + get_messages(self): List[str]
+  }
+
+  class Symbol {
+    - value: str
+
+    + __init__(self, value: str)
+  }
+
+  class GameStats {
+    - game_id: int
+    - rounds: int
+    - wins: int
+    - losses: int
+
+    + __init__(self, game_id: int)
+    + update_stats(self, winner: bool)
+  }
+
+  class WindowManager {
+    - active_window: Window
+
+    + __init__(self)
+    + set_active_window(self, window: Window)
+    + get_active_window(self)
+  }
+
+  class Window {
+    + draw(self)
+    + handle_events(self)
+  }
+
+  class MainMenuWindow {
+    - options: List[Option]
+
+    + __init__(self)
+    + draw(self)
+    + handle_events(self)
+    + start_game(self)
+  }
+
+  class GameLobbyWindow {
+    + draw(self, game: GameLobby)
+    + handle_events(self, game: GameLobby)
+  }
+
+  class GameBoardWindow {
+    + draw(self, game: Game)
+    + handle_events(self, game: Game)
+  }
+
+  class EndGameScreenWindow {
+    + __init__(self, winner: Symbol)
+    + draw(self, game: Game)
+    + handle_events(self, game: Game)
+  }
+
+  Game --* Player: players
+  Player <|-- HumanPlayer
+  Player <|-- AIPlayer
+  MultiplayerManager --* MultiplayerGameLobby
+  GameLobby --* Player: players
+  GameLobby <|-- MultiplayerGameLobby
+  MultiplayerGameLobby --* Chat: chat
+  GameStats --o Player: game_stats
+  WindowManager --* Window: active_window
+  Window <|-- MainMenuWindow
+  Window <|-- GameLobbyWindow
+  Window <|-- GameBoardWindow
+  Window <|-- EndGameScreenWindow
+  Symbol --o Game
+  AIPlayer <|-- EasyAIPlayer
+  AIPlayer <|-- HardAIPlayer
+  GameLobbyWindow --* GameLobby
+  GameBoardWindow --* Game
+  EndGameScreenWindow --* Game
