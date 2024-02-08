@@ -3,7 +3,7 @@ from .window_manager import Window, WindowManager
 from .components.menu_button import MenuButton
 
 
-class MainMenuWindow(Window):
+class PlayOnlineWindow(Window):
     def __init__(self):
         super().__init__()
 
@@ -14,7 +14,7 @@ class MainMenuWindow(Window):
         button_height = 0.1 * self.menu_height
         button_margin = 0.025 * self.menu_height
 
-        self.menu_button_texts = ["Play Online", "Play Offline", "Options", "Exit"]
+        self.menu_button_texts = ["Join", "Host", "Back"]
 
         self.menu_buttons = [
             MenuButton(
@@ -38,17 +38,14 @@ class MainMenuWindow(Window):
         for button in self.menu_buttons:
             if not button.rect.collidepoint(event.pos):
                 continue
-            if button.text == "Play Online":
-                from .play_online_window import PlayOnlineWindow
+            if button.text == "Join":
+                print("Join")
+            elif button.text == "Host":
+                print("Host")
+            elif button.text == "Back":
+                from .main_menu_window import MainMenuWindow
 
-                WindowManager().activeWindow = PlayOnlineWindow()
-
-            elif button.text == "Options":
-                from .options_window import OptionsWindow
-
-                WindowManager().activeWindow = OptionsWindow()
-            elif button.text == "Exit":
-                pygame.quit()
+                WindowManager().activeWindow = MainMenuWindow()
 
     def draw(self, screen):
         pygame.draw.rect(
@@ -68,10 +65,8 @@ class MainMenuWindow(Window):
 
         pygame.font.init()
         font = pygame.font.SysFont("Arial", 48, True)
-        text = font.render(b"Tic Tac Toe", True, (255, 0, 0))
+        text = font.render(b"Play Online", True, (255, 0, 0))
         text_rect = text.get_rect(
             center=(self.mid_x, self.mid_y - self.menu_height / 2 + self.mid_y / 6)
         )
         self.screen.blit(text, text_rect)
-
-        pygame.rect.Rect()

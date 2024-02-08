@@ -1,4 +1,4 @@
-# TickTackToe
+# TicTacToe
 
 ## Week 1
 
@@ -44,3 +44,12 @@ Aufgabenverteilung Sprint 2:
 - Projektmanager: Sebastian
 - SCRUM Master: Marius
 - Entwickler: Veronika
+
+# Codebase
+
+## Requirements
+- Python 3.10
+- `pip3 install -r requirements.txt`
+
+## Running the code
+- python3 main.py

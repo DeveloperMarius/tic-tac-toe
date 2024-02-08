@@ -70,5 +70,5 @@ class Window:
     def handleEvent(self, event):
         pass
 
-    def draw(self):
+    def draw(self, screen: pygame.Surface):
         pass
