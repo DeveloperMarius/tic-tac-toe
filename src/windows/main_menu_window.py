@@ -1,6 +1,8 @@
 import pygame
+
+from .components.menu_title import MenuTitle
 from .window_manager import Window, WindowManager
-from .components.menu_button import MenuButton
+from .components.button import Button
 
 
 class MainMenuWindow(Window):
@@ -10,6 +12,12 @@ class MainMenuWindow(Window):
         self.menu_width = 0.4 * self.width
         self.menu_height = 0.75 * self.height
 
+        self.menu_title = MenuTitle(
+            title="Main Menu",
+            x=self.mid_x,
+            y=self.mid_y - self.menu_height / 2 + self.mid_y / 6,
+        )
+
         button_width = 0.8 * self.menu_width
         button_height = 0.1 * self.menu_height
         button_margin = 0.025 * self.menu_height
@@ -17,14 +25,15 @@ class MainMenuWindow(Window):
         self.menu_button_texts = ["Play Online", "Play Offline", "Options", "Exit"]
 
         self.menu_buttons = [
-            MenuButton(
+            Button(
                 screen=self.screen,
                 text=text,
                 x=self.mid_x - button_width / 2,
                 y=self.mid_y * 1.25
                 - self.menu_height / 2
                 + i * button_height
-                + button_margin * (i + 1),
+                + button_margin * (i + 1)
+                + 10,
                 width=button_width,
                 height=button_height,
             )
@@ -51,27 +60,7 @@ class MainMenuWindow(Window):
                 pygame.quit()
 
     def draw(self, screen):
-        pygame.draw.rect(
-            screen,
-            (222, 223, 232),
-            (
-                self.mid_x - self.menu_width / 2,
-                self.mid_y - self.menu_height / 2,
-                self.menu_width,
-                self.menu_height,
-            ),
-            border_radius=10,
-        )
-
         for button in self.menu_buttons:
             button.draw()
 
-        pygame.font.init()
-        font = pygame.font.SysFont("Arial", 48, True)
-        text = font.render(b"Tic Tac Toe", True, (255, 0, 0))
-        text_rect = text.get_rect(
-            center=(self.mid_x, self.mid_y - self.menu_height / 2 + self.mid_y / 6)
-        )
-        self.screen.blit(text, text_rect)
-
-        pygame.rect.Rect()
+        self.menu_title.draw(screen)
