@@ -54,20 +54,20 @@ class PlayOnlineWindow(Window):
         self.menu_items = [self.menu_input] + self.menu_buttons
 
     def handleEvent(self, event):
-        if event.type != pygame.MOUSEBUTTONDOWN:
-            return
+        self.menu_input.handle_events(event)
 
-        for button in self.menu_buttons:
-            if not button.rect.collidepoint(event.pos):
-                continue
-            if button.text == "Join":
-                print("Join")
-            elif button.text == "Host":
-                print("Host")
-            elif button.text == "Back":
-                from .main_menu_window import MainMenuWindow
+        if event.type == pygame.MOUSEBUTTONUP:
+            for button in self.menu_buttons:
+                if not button.rect.collidepoint(event.pos):
+                    continue
+                if button.text == "Join":
+                    print("Join")
+                elif button.text == "Host":
+                    print("Host")
+                elif button.text == "Back":
+                    from .main_menu_window import MainMenuWindow
 
-                WindowManager().activeWindow = MainMenuWindow()
+                    WindowManager().activeWindow = MainMenuWindow()
 
     def draw(self, screen):
         for item in self.menu_items:
