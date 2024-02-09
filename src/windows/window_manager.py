@@ -68,7 +68,7 @@ class Window:
         self._mid_y = value
 
     def handleEvent(self, event):
-        pass
+        raise NotImplementedError
 
     def draw(self, screen: pygame.Surface):
-        pass
+        raise NotImplementedError

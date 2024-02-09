@@ -52,6 +52,11 @@ class MainMenuWindow(Window):
 
                 WindowManager().activeWindow = PlayOnlineWindow()
 
+            elif button.text == "Play Offline":
+                from .game_window import GameWindow
+
+                WindowManager().activeWindow = GameWindow()
+
             elif button.text == "Options":
                 from .options_window import OptionsWindow
 
