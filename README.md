@@ -18,18 +18,11 @@ Den Entwicklern wurden verschiedene Überaufgaben zugeordnet:
 Ebenfalls wurde ein GitHub Repository erstellt und den Entwickler Berechtigungen zugeordnet.
 
 ### SCRUM Sprints - @Veronika
-#### 1. Sprint (31.01.2024 - 32.01.2024)
+#### 1. Sprint (31.01.2024 - 07.02.2024)
 Aufgabenverteilung Sprint 1:
 - Marius: User Stories + Backlog 
 - Sebastian: Klassendiagrammen erstellen
 - Veronika: Scrum Dokumentation, Sequenzdiagramme erstellen
-
-#### 2. Sprint (31.01.2024 - ?)
-Erfüllte Aufgaben von Sprint 1:
-- ...
-
-Aufgabenverteilung Sprint 2:
-- ...
 
 ## Week 2
 
@@ -38,12 +31,30 @@ Aufgabenverteilung Sprint 2:
 - SCRUM Master: Sebastian
 - Entwickler: Marius
 
+#### 2. Sprint (07.02.2024 - 16.02.2024)
+Erfüllte Aufgaben von Sprint 2:
+- Marius: Use Cases aufgeteilt, UseCase 1 bearbeitet
+- Sebastian: Klassendiagrammen erstellt
+- Veronika: Sequenzdiagramme erstellt
+
+Aufgabenverteilung Sprint 2:
+- Marius: Use Cases 1 und 3 
+- Sebastian: Use Cases 2 erstellen, Menü implementieren 
+- Veronika: Scrum Dokumentation, Use Cases 2 und 5 
+
 ## Week3
 
 ### Rollen
 - Projektmanager: Sebastian
 - SCRUM Master: Marius
 - Entwickler: Veronika
+
+#### 3. Sprint (16.02.2024 - ?)
+Erfüllte Aufgaben von Sprint 1:
+- ...
+
+Aufgabenverteilung Sprint 2:
+- ...
 
 # Codebase
 
