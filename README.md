@@ -33,14 +33,14 @@ Aufgabenverteilung Sprint 1:
 
 #### 2. Sprint (07.02.2024 - 16.02.2024)
 Erfüllte Aufgaben von Sprint 2:
-- Marius: Use Cases aufgeteilt, UseCase 1 bearbeitet
-- Sebastian: Klassendiagrammen erstellt
+- Marius: Use Cases aufgeteilt, UseCase 1 und 3 bearbeitet
+- Sebastian: Klassendiagramm erstellt, Menü implementiert
 - Veronika: Sequenzdiagramme erstellt
 
 Aufgabenverteilung Sprint 2:
 - Marius: Use Cases 1 und 3 
 - Sebastian: Use Cases 2 erstellen, Menü implementieren 
-- Veronika: Scrum Dokumentation, Use Cases 2 und 5 
+- Veronika: Scrum Dokumentation, Use Cases 4 und 5 
 
 ## Week3
 
