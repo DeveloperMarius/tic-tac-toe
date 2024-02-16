@@ -1,4 +1,4 @@
-# TickTackToe
+# TicTacToe
 
 ## Week 1
 
@@ -55,3 +55,12 @@ Erfüllte Aufgaben von Sprint 1:
 
 Aufgabenverteilung Sprint 2:
 - ...
+
+# Codebase
+
+## Requirements
+- Python 3.10
+- `pip3 install -r requirements.txt`
+
+## Running the code
+- python3 main.py
