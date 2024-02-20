@@ -42,39 +42,37 @@ class NetworkClient:
 
 class NetworkServer:
 
+    _sio: socketio.Server
+
     def __init__(self):
-        self.sio = socketio.Server()
+        self._sio = socketio.Server()
         self.call_backs()
-        self.app = socketio.WSGIApp(self.sio, static_files={
+        self.app = socketio.WSGIApp(self._sio, static_files={
             '/': {'content_type': 'text/html', 'filename': 'index.html'}
         })
 
     def __enter__(self):
         self.start_server()
-        return self.sio
+        return self._sio
 
     def start_server(self):
         eventlet.wsgi.server(eventlet.listen(('', 5000)), self.app)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.sio.shutdown()
+        self.shutdown()
+
+    def shutdown(self):
+        self._sio.shutdown()
 
     def call_backs(self):
-        @self.sio.event
+        @self._sio.event
         def connect(sid, environ):
             print('connect ', sid)
 
-        @self.sio.event
+        @self._sio.event
         def my_message(sid, data):
             print('message ', sid, data)
-            self.sio.emit('my_message', {'message': data, 'sid': sid}, sid)
-            time.sleep(5)
-            self.sio.emit('my_message', {'message': 'connected', 'sid': sid}, sid)
 
-        @self.sio.event
-        def my_response(sid, data):
-            print('response ', sid, data)
-
-        @self.sio.event
+        @self._sio.event
         def disconnect(sid):
             print('disconnect ', sid)
