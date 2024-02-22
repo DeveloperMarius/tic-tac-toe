@@ -1,23 +1,32 @@
-import time
-
+from typing import List
 import socketio
 import eventlet
+from src.models.user import LocalUser
+from src.game.config import Config
 
 
 class NetworkClient:
 
     _sio: socketio.Client
+    _username: str
 
-    def __init__(self):
+    def __init__(self, username):
         self._sio = socketio.Client()
+        self._username = username
 
     def __enter__(self):
         self._connect()
         return self
 
+    @property
+    def username(self):
+        return self._username
+
     def _connect(self):
         self.call_backs()
-        self._sio.connect('http://localhost:5000')
+        self._sio.connect('http://localhost:5000', {
+            'username': self.username
+        }, 'authtoken')
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._sio.disconnect()
@@ -66,8 +75,22 @@ class NetworkServer:
 
     def call_backs(self):
         @self._sio.event
-        def connect(sid, environ):
-            print('connect ', sid)
+        def connect(sid, headers, auth):
+            print('connect ', sid, headers, auth)
+            username = headers['HTTP_USERNAME']
+
+            # Check if user is already playing
+            if Config.get_sessionmanager().exists_with_username(username):
+                return False
+
+            # Apply user limit
+            if Config.get_sessionmanager().user_count() >= Config.lobby_max_players:
+                return False
+
+            # Add user to local user cache
+            Config.get_database().setup_user(LocalUser(sid, username))
+
+            return True
 
         @self._sio.event
         def my_message(sid, data):
@@ -76,3 +99,13 @@ class NetworkServer:
         @self._sio.event
         def disconnect(sid):
             print('disconnect ', sid)
+            # Check if user is in local user cache
+            if not Config.get_sessionmanager().exists_with_id(sid):
+                return False
+
+            # Save and Remove user from local user cache
+            user = Config.get_sessionmanager().get_user(sid)
+            Config.get_database().save_user(user)
+            Config.get_sessionmanager().remove_user(sid)
+
+            return True
