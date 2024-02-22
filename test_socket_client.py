@@ -1,12 +1,12 @@
 from src.game.network import NetworkClient
 import time
-from src.game.config import Config
+from src.game.config import ClientConfig
 from src.game.events import EventType
 
 s = NetworkClient('marius')
-Config.get_eventmanager().on(EventType.USER_LEAVE, lambda event: print(event))
 s._connect()
 while True:
+    print('users', ClientConfig.get_sessionmanager().users)
     time.sleep(20)
 
 #with NetworkClient() as s:

@@ -26,9 +26,15 @@ class NetworkClient:
 
     def _connect(self):
         self.call_backs()
+        self._register_default_events()
         self._sio.connect('http://localhost:5000', {
             'username': self.username
         }, 'authtoken')
+
+    def _register_default_events(self):
+        ClientConfig.get_eventmanager().clear_events()
+        ClientConfig.get_eventmanager().on(EventType.USER_JOIN, lambda event: ClientConfig.get_sessionmanager().add_user(event.data['user']))
+        ClientConfig.get_eventmanager().on(EventType.USER_LEAVE, lambda event: ClientConfig.get_sessionmanager().remove_user(event.data['user'].id))
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._sio.disconnect()
@@ -44,7 +50,9 @@ class NetworkClient:
             parsed_data = json.loads(data)
             if 'user' in parsed_data:
                 parsed_data['user'] = LocalUser(**parsed_data['user'])
-            ClientConfig.get_eventmanager().trigger(Event(EventType(event), data))
+            print(parsed_data)
+            event_type = EventType(event)
+            ClientConfig.get_eventmanager().trigger(Event(event_type, parsed_data))
 
         @self._sio.event
         def disconnect():
@@ -98,6 +106,7 @@ class NetworkServer:
             # Add user to local user cache
             user = LocalUser(sid, username)
             ServerConfig.get_database().setup_user(user)
+            ServerConfig.get_sessionmanager().add_user(user)
 
             # Trigger event
             self.send(Event(EventType.USER_JOIN, {'user': user}))

@@ -49,3 +49,6 @@ class EventManager:
         if event_type not in self.listener.keys():
             self.listener[event_type] = []
         self.listener[event_type].append(callback)
+
+    def clear_events(self):
+        self._listener = {}

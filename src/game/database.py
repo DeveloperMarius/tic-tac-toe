@@ -3,10 +3,14 @@ from src.models.user import LocalUser
 
 
 class SessionManager:
-    _users: List[LocalUser] = []
+    _users: List[LocalUser]
 
     def __init__(self):
-        self.users = []
+        self._users = []
+
+    @property
+    def users(self) -> List[LocalUser]:
+        return self._users
 
     def add_user(self, user: LocalUser):
         self._users.append(user)
@@ -18,6 +22,7 @@ class SessionManager:
         return None
 
     def exists_with_username(self, username: str) -> bool:
+        print('exists_with_username', username, self._users)
         for user in self._users:
             if user.username == username:
                 return True
@@ -37,9 +42,6 @@ class SessionManager:
 
     def user_count(self) -> int:
         return len(self._users)
-
-    def get_users(self) -> List[LocalUser]:
-        return self._users
 
 
 class Database:
