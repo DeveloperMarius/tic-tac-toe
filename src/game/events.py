@@ -6,6 +6,7 @@ class EventType(Enum):
 
     USER_JOIN = 'user_join'
     USER_LEAVE = 'user_leave'
+    SYNC = 'sync'
 
 
 class Event:

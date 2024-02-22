@@ -43,6 +43,9 @@ class SessionManager:
     def user_count(self) -> int:
         return len(self._users)
 
+    def set_users(self, users: List[LocalUser]):
+        self._users = users
+
 
 class Database:
 

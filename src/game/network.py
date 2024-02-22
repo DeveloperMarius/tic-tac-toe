@@ -30,11 +30,17 @@ class NetworkClient:
         self._sio.connect('http://localhost:5000', {
             'username': self.username
         }, 'authtoken')
+        self.send(Event(EventType.SYNC))
 
     def _register_default_events(self):
         ClientConfig.get_eventmanager().clear_events()
         ClientConfig.get_eventmanager().on(EventType.USER_JOIN, lambda event: ClientConfig.get_sessionmanager().add_user(event.data['user']))
         ClientConfig.get_eventmanager().on(EventType.USER_LEAVE, lambda event: ClientConfig.get_sessionmanager().remove_user(event.data['user'].id))
+        ClientConfig.get_eventmanager().on(EventType.SYNC, lambda event: self._event_sync(event))
+
+    def _event_sync(self, event):
+        users = [LocalUser(**user) for user in event.data['users']]
+        ClientConfig.get_sessionmanager().set_users(users)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._sio.disconnect()
@@ -58,8 +64,11 @@ class NetworkClient:
         def disconnect():
             print('disconnected from server')
 
-    def send(self, event, data):
-        self._sio.emit(event, data)
+    def send(self, event: Event):
+        self._sio.emit(event.type.value, event.data)
+
+    def send_request(self, event_type: EventType):
+        self._sio.emit(event_type.value, {})
 
 
 class NetworkServer:
@@ -86,8 +95,8 @@ class NetworkServer:
     def shutdown(self):
         self._sio.shutdown()
 
-    def send(self, event: Event):
-        self._sio.emit(event.type.value, json.dumps(event.data, cls=ModelEncoder))
+    def send(self, event: Event, to=None, skip_sid=None):
+        self._sio.emit(event.type.value, json.dumps(event.data, cls=ModelEncoder), to=to, skip_sid=skip_sid)
 
     def call_backs(self):
         @self._sio.event
@@ -109,13 +118,16 @@ class NetworkServer:
             ServerConfig.get_sessionmanager().add_user(user)
 
             # Trigger event
-            self.send(Event(EventType.USER_JOIN, {'user': user}))
+            self.send(Event(EventType.USER_JOIN, {'user': user}), skip_sid=sid)
 
             return True
 
         @self._sio.event
-        def my_message(sid, data):
-            print('message ', sid, data)
+        def sync(sid):
+            print('message ', sid)
+            self.send(Event(EventType.SYNC, {
+                'users': ServerConfig.get_sessionmanager().users
+            }), to=sid)
 
         @self._sio.event
         def disconnect(sid):
@@ -128,7 +140,7 @@ class NetworkServer:
             user = ServerConfig.get_sessionmanager().get_user(sid)
 
             # Trigger event
-            self.send(Event(EventType.USER_LEAVE, {'user': user}))
+            self.send(Event(EventType.USER_LEAVE, {'user': user}), skip_sid=sid)
 
             # Save and Remove user from local user cache
             ServerConfig.get_database().save_user(user)
