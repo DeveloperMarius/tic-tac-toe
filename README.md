@@ -32,29 +32,33 @@ Aufgabenverteilung Sprint 1:
 - Entwickler: Marius
 
 #### 2. Sprint (07.02.2024 - 16.02.2024)
-Erfüllte Aufgaben von Sprint 2:
-- Marius: Use Cases aufgeteilt, UseCase 1 und 3 bearbeitet
+Erfüllte Aufgaben von Sprint 1:
+- Marius: User Stories + Backlog
 - Sebastian: Klassendiagramm erstellt, Menü implementiert
-- Veronika: Sequenzdiagramme erstellt
+- Veronika: Sequenzdiagramme erstellt, Scrum Dokumentation (Gantt chart)
 
 Aufgabenverteilung Sprint 2:
 - Marius: Use Cases 1 und 3 
 - Sebastian: Use Cases 2 erstellen, Menü implementieren 
 - Veronika: Scrum Dokumentation, Use Cases 4 und 5 
 
-## Week3
+## Week 3
 
 ### Rollen
 - Projektmanager: Sebastian
 - SCRUM Master: Marius
 - Entwickler: Veronika
 
-#### 3. Sprint (16.02.2024 - ?)
+#### 3. Sprint (16.02.2024 - 23.02.2024)
 Erfüllte Aufgaben von Sprint 1:
-- ...
+- Marius: Use Cases 1 und 3 erstellt
+- Sebastian: Use Cases 2 erstellt, Menü implementiert
+- Veronika: Use Cases 4 und 5 erstellt
 
 Aufgabenverteilung Sprint 2:
-- ...
+- Marius: Network-Manager + Scrum
+- Sebastian: Player-Management, Projektleitung
+- Veronika: KI-Algorithmus implementieren
 
 # Codebase
 
