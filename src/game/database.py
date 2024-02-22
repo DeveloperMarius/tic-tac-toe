@@ -44,13 +44,11 @@ class SessionManager:
 
 class Database:
 
-    _users: List[LocalUser] = []
-
     def __init__(self):
-        self._users = []
+        pass
 
     def setup_user(self, user: LocalUser):
-        self._users.append(user)
+        pass
 
-    def save(self, user: LocalUser):
+    def save_user(self, user: LocalUser):
         pass

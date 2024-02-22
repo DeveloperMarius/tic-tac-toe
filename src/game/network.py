@@ -3,6 +3,9 @@ import socketio
 import eventlet
 from src.models.user import LocalUser
 from src.game.config import Config
+from src.game.events import Event, EventType
+import json
+from src.utils import ModelEncoder
 
 
 class NetworkClient:
@@ -36,10 +39,13 @@ class NetworkClient:
         def connect():
             print('connection established')
 
-        @self._sio.event
-        def my_message(data):
-            print('message received with ', data)
-            self._sio.emit('my_response', {'response': 'my response'})
+        @self._sio.on('*')
+        def any_event(event, data):
+            print('message received with ', event, data)
+            parsed_data = json.loads(data)
+            if 'user' in parsed_data:
+                parsed_data['user'] = LocalUser(**parsed_data['user'])
+            Config.get_eventmanager().trigger(Event(EventType(event), data))
 
         @self._sio.event
         def disconnect():
@@ -73,6 +79,9 @@ class NetworkServer:
     def shutdown(self):
         self._sio.shutdown()
 
+    def send(self, event: Event):
+        self._sio.emit(event.type.value, json.dumps(event.data, cls=ModelEncoder))
+
     def call_backs(self):
         @self._sio.event
         def connect(sid, headers, auth):
@@ -88,7 +97,11 @@ class NetworkServer:
                 return False
 
             # Add user to local user cache
-            Config.get_database().setup_user(LocalUser(sid, username))
+            user = LocalUser(sid, username)
+            Config.get_database().setup_user(user)
+
+            # Trigger event
+            self.send(Event(EventType.USER_JOIN, {'user': user}))
 
             return True
 
@@ -103,8 +116,13 @@ class NetworkServer:
             if not Config.get_sessionmanager().exists_with_id(sid):
                 return False
 
-            # Save and Remove user from local user cache
+            # Get user from local user cache
             user = Config.get_sessionmanager().get_user(sid)
+
+            # Trigger event
+            self.send(Event(EventType.USER_LEAVE, {'user': user}))
+
+            # Save and Remove user from local user cache
             Config.get_database().save_user(user)
             Config.get_sessionmanager().remove_user(sid)
 
