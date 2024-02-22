@@ -1,8 +1,7 @@
-from typing import List
 import socketio
 import eventlet
 from src.models.user import LocalUser
-from src.game.config import Config
+from src.game.config import ClientConfig, ServerConfig
 from src.game.events import Event, EventType
 import json
 from src.utils import ModelEncoder
@@ -45,7 +44,7 @@ class NetworkClient:
             parsed_data = json.loads(data)
             if 'user' in parsed_data:
                 parsed_data['user'] = LocalUser(**parsed_data['user'])
-            Config.get_eventmanager().trigger(Event(EventType(event), data))
+            ClientConfig.get_eventmanager().trigger(Event(EventType(event), data))
 
         @self._sio.event
         def disconnect():
@@ -89,16 +88,16 @@ class NetworkServer:
             username = headers['HTTP_USERNAME']
 
             # Check if user is already playing
-            if Config.get_sessionmanager().exists_with_username(username):
+            if ServerConfig.get_sessionmanager().exists_with_username(username):
                 return False
 
             # Apply user limit
-            if Config.get_sessionmanager().user_count() >= Config.lobby_max_players:
+            if ServerConfig.get_sessionmanager().user_count() >= ServerConfig.lobby_max_players:
                 return False
 
             # Add user to local user cache
             user = LocalUser(sid, username)
-            Config.get_database().setup_user(user)
+            ServerConfig.get_database().setup_user(user)
 
             # Trigger event
             self.send(Event(EventType.USER_JOIN, {'user': user}))
@@ -113,17 +112,17 @@ class NetworkServer:
         def disconnect(sid):
             print('disconnect ', sid)
             # Check if user is in local user cache
-            if not Config.get_sessionmanager().exists_with_id(sid):
+            if not ServerConfig.get_sessionmanager().exists_with_id(sid):
                 return False
 
             # Get user from local user cache
-            user = Config.get_sessionmanager().get_user(sid)
+            user = ServerConfig.get_sessionmanager().get_user(sid)
 
             # Trigger event
             self.send(Event(EventType.USER_LEAVE, {'user': user}))
 
             # Save and Remove user from local user cache
-            Config.get_database().save_user(user)
-            Config.get_sessionmanager().remove_user(sid)
+            ServerConfig.get_database().save_user(user)
+            ServerConfig.get_sessionmanager().remove_user(sid)
 
             return True
