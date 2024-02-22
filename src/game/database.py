@@ -1,5 +1,9 @@
+import subprocess
 from typing import List
-from src.models.user import LocalUser
+from src.models.user import LocalUser, User
+import os
+from sqlalchemy import create_engine, select, update
+from sqlalchemy.orm import Session
 
 
 class SessionManager:
@@ -15,6 +19,10 @@ class SessionManager:
     def add_user(self, user: LocalUser):
         self._users.append(user)
 
+    def update_user(self, user: LocalUser):
+        index = next((index for (index, _user) in enumerate(self._users) if _user.id == user.id), None)
+        self._users[index] = user
+
     def get_user(self, id: str) -> LocalUser | None:
         for user in self._users:
             if user.id == id:
@@ -22,7 +30,6 @@ class SessionManager:
         return None
 
     def exists_with_username(self, username: str) -> bool:
-        print('exists_with_username', username, self._users)
         for user in self._users:
             if user.username == username:
                 return True
@@ -50,10 +57,33 @@ class SessionManager:
 class Database:
 
     def __init__(self):
-        pass
+        self._setup_sqlite3()
+        self._engine = create_engine(f"sqlite:///{os.path.dirname(os.path.realpath(__file__))}/../../res/database.db", echo=False)
 
-    def setup_user(self, user: LocalUser):
-        pass
+    def _setup_sqlite3(self):
+        subprocess.run(['sqlite3', '--init', f'{os.path.dirname(os.path.realpath(__file__))}/../../res/database.sql',  f'{os.path.dirname(os.path.realpath(__file__))}/../../res/database.db', '.quit'])
+
+    @property
+    def engine(self):
+        return self._engine
+
+    def get_user(self, user: LocalUser):
+        with Session(self.engine, expire_on_commit=False) as session:
+            statement = select(User).where(User.username == user.username)
+            response = session.scalars(statement)
+            users = response.fetchall()
+            if len(users) == 0:
+                # Create User in db
+                db_user = User(
+                    username=user.username
+                )
+                session.add(db_user)
+                session.commit()
+            else:
+                # Use User from db
+                db_user = users[0]
+        return db_user
 
     def save_user(self, user: LocalUser):
+        # update(User).where(User.username == user.username).values()
         pass

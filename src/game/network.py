@@ -114,7 +114,10 @@ class NetworkServer:
 
             # Add user to local user cache
             user = LocalUser(sid, username)
-            ServerConfig.get_database().setup_user(user)
+
+            db_user = ServerConfig.get_database().get_user(user)
+            user.db_id = db_user.id
+
             ServerConfig.get_sessionmanager().add_user(user)
 
             # Trigger event
