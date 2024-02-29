@@ -22,6 +22,7 @@ class LocalUser:
     _db_id: int | None
     _username: str
     _admin: bool = False
+    _ready: bool = False
 
     def __init__(self, id: str, username: str, admin: bool = False, db_id: int | None = None):
         self._id = id
@@ -48,6 +49,14 @@ class LocalUser:
     @db_id.setter
     def db_id(self, value):
         self._db_id = value
+
+    @property
+    def ready(self) -> bool:
+        return self._ready
+
+    @ready.setter
+    def ready(self, value: bool):
+        self._ready = value
 
     def __str__(self) -> str:
         return f"User(id={self.id!r}, db_id={self.db_id!r})"

@@ -2,8 +2,12 @@ import subprocess
 from typing import List
 from src.models.user import LocalUser, User
 import os
-from sqlalchemy import create_engine, select, update
+from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
+from sqlalchemy import String
+from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.event import listens_for
+from sqlalchemy.orm import Mapper
 
 
 class SessionManager:
@@ -87,3 +91,36 @@ class Database:
     def save_user(self, user: LocalUser):
         # update(User).where(User.username == user.username).values()
         pass
+
+class EventHandler:
+
+    @staticmethod
+    @listens_for(Mapper, "before_insert")
+    def receive_before_insert(mapper, connection, target):
+        table = target.__table__
+        EventHandler._validate(target.__dict__, table.columns)
+
+    @staticmethod
+    @listens_for(Mapper, "before_update")
+    def receive_before_update(mapper, connection, target):
+        table = target.__table__
+        EventHandler._validate(target.__dict__, table.columns)
+
+    @staticmethod
+    def _validate(data, columns):
+        for column in columns:
+            if column.name not in data:
+                continue
+            value = data[column.name]
+            if isinstance(column.type, String):
+                length = column.type.length
+                if value is None:
+                    if not column.nullable:
+                        raise ValueError(f"{column.name} cannot be null.")
+                    continue
+                if len(value) > length:
+                    raise ValueError(f"{column.name} is to long. {len(value)} > {length}")
+
+
+class Base(DeclarativeBase):
+    pass
