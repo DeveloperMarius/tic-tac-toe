@@ -1,16 +1,42 @@
 import random
-from ..windows.components.tictactoe_field import FieldRect
+from src.windows.components.tictactoe_field import FieldRect
 
 
 class Game:
 
-    def __init__(self) -> None:
-        # 0 = Nothing
+    _current_player: str | None = None
+
+    def __init__(self, player_ids) -> None:
+        # None = Nothing
         # 1 = X
         # 2 = O
         self.winner = 0
-        self.player = random.choice([1, 2])
-        self.board = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+        self.players = player_ids
+        self.board = [
+            [None, None, None],
+            [None, None, None],
+            [None, None, None]
+        ]
+
+    def move(self, x: int, y: int) -> bool:
+        if self.board[y][x] is not None:
+            return False
+
+        self.board[y][x] = self.current_player
+        return True
+
+    def next_player_to_move(self) -> str:
+        if self._current_player is None:
+            self._current_player = random.choice(self.players)
+            return self._current_player
+
+        last_player = self._current_player
+        self._current_player = random.choice([player for player in self.players if player != last_player])
+        return self._current_player
+
+    @property
+    def current_player(self) -> str:
+        return self._current_player
 
     def handle_turn(self, index: int, fields: list[FieldRect]):
         # Check if the field is already checked

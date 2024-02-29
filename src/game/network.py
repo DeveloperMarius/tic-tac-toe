@@ -1,10 +1,12 @@
+import random
+
 import socketio
 import eventlet
 from src.models.user import LocalUser
 from src.game.config import ClientConfig, ServerConfig
 from src.game.events import Event, EventType
 import json
-from src.utils import ModelEncoder
+from src.utils.json_encoder import ModelEncoder
 
 
 class NetworkClient:
@@ -56,7 +58,6 @@ class NetworkClient:
             parsed_data = json.loads(data)
             if 'user' in parsed_data:
                 parsed_data['user'] = LocalUser(**parsed_data['user'])
-            print(parsed_data)
             event_type = EventType(event)
             ClientConfig.get_eventmanager().trigger(Event(event_type, parsed_data))
 
@@ -114,7 +115,10 @@ class NetworkServer:
 
             # Add user to local user cache
             user = LocalUser(sid, username)
-            ServerConfig.get_database().setup_user(user)
+
+            db_user = ServerConfig.get_database().get_user(user)
+            user.db_id = db_user.id
+
             ServerConfig.get_sessionmanager().add_user(user)
 
             # Trigger event
@@ -128,6 +132,63 @@ class NetworkServer:
             self.send(Event(EventType.SYNC, {
                 'users': ServerConfig.get_sessionmanager().users
             }), to=sid)
+
+        @self._sio.event
+        def lobby_ready(sid, data):
+            # Check if Game is already running
+            if ServerConfig.get_game() is not None:
+                return
+
+            # Check if Lobby has enough users
+            users = ServerConfig.get_sessionmanager().users
+            if len(users) < 2:
+                return
+
+            # Mark User as Ready
+            user = ServerConfig.get_sessionmanager().get_user(sid)
+            user.ready = data.ready
+            ServerConfig.get_sessionmanager().update_user(user)
+
+            # Check if every player is ready
+            all_ready = True
+            for user_ in users:
+                if not user_.ready:
+                    all_ready = False
+            if all_ready:
+                game = ServerConfig.create_game([user_.id for user_ in users])
+                # Start Gameplay
+                self.send(Event(EventType.GAMEPLAY_START))
+
+                # Select user to move first
+                next_player = game.next_player_to_move()
+                self.send(Event(EventType.GAMEPLAY_MOVE_REQUEST), to=next_player)
+
+        @self._sio.event
+        def gameplay_move_response(sid, data):
+            # Check if Game is running
+            if ServerConfig.get_game() is None:
+                return
+            game = ServerConfig.get_game()
+
+            # Make board move
+            success = game.move(data.x, data.y)
+            if not success:
+                self.send(Event(EventType.GAMEPLAY_MOVE_DENIED), to=game.current_player)
+                return
+
+            # Send back that the move was accepted
+            self.send(Event(EventType.GAMEPLAY_MOVE_ACCEPTED), to=game.current_player)
+
+            if game.check_winner():
+                self.send(Event(EventType.GAMEPLAY_STOP))
+                self.send(Event(EventType.GAMEPLAY_WINNER, {
+                    'user': game.current_player
+                }))
+                return
+
+            # Select user to move next
+            next_player = game.next_player_to_move()
+            self.send(Event(EventType.GAMEPLAY_MOVE_REQUEST), to=next_player)
 
         @self._sio.event
         def disconnect(sid):
