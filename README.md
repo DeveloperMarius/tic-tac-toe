@@ -74,23 +74,23 @@ Lessons learned:
 - KI konnte nicht implementiert werden, da die von der Player-Klasse abhängt, die für später geplannt war (Plannungsfehler)
 - Marius konnte Datenbank + Eventmanagement machen, was für den nächsten Sprint geplant war (Plannungsfehler)
 
-Aufgabenverteilung Sprint 2:
+Aufgabenverteilung Sprint 5:
 - Marius: Implementierung von neuen Events + Optimierung der Datenbank (in ständiger Absprache mit Sebastian)
 - Sebastian: Implementierung Lobby-Interface, Alpha-Version (erste Muliplayer Spiel ermöglichen)
 - Veronika: Player optimieren + KI Implementierung anfangen
 
 ### Week 5
 
-#### 5. Sprint (16.02.2024 - 23.02.2024)
-Erfüllte Aufgaben von Sprint 1:
-- Marius: Use Cases 1 und 3 erstellt
-- Sebastian: Use Cases 2 erstellt, Menü implementiert
-- Veronika: Use Cases 4 und 5 erstellt
+#### 5. Sprint (01.03.2024 - 08.03.2024)
+Erfüllte Aufgaben von Sprint 4:
+- Marius: 
+- Sebastian: 
+- Veronika: 
 
-Aufgabenverteilung Sprint 2:
-- Marius: Network-Manager + Scrum
-- Sebastian: Player-Management, Projektleitung
-- Veronika: KI-Algorithmus implementieren
+Aufgabenverteilung Sprint 5:
+- Marius: 
+- Sebastian: 
+- Veronika: 
 
 # Codebase
 
