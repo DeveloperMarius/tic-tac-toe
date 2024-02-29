@@ -58,7 +58,6 @@ class NetworkClient:
             parsed_data = json.loads(data)
             if 'user' in parsed_data:
                 parsed_data['user'] = LocalUser(**parsed_data['user'])
-            print(parsed_data)
             event_type = EventType(event)
             ClientConfig.get_eventmanager().trigger(Event(event_type, parsed_data))
 
