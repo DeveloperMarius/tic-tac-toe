@@ -1,5 +1,4 @@
 from src.game.game import Game
-import symbol
 
 
 class Player:
@@ -8,6 +7,7 @@ class Player:
 
         self.name = name
         self.symbol = symbol # 1 = X or 2 = O
+        self.isMyTurn = False
         #self.game_stats = GameStats(name) # Game Stats noch nicht vorhanden
 
     def make_move(self, game, row: int, col: int):
