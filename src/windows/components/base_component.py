@@ -8,3 +8,6 @@ class BaseComponent:
 
     def update(self):
         raise NotImplementedError
+
+    def handleEvent(self, event):
+        raise NotImplementedError

@@ -1,10 +1,9 @@
 import pygame
 
-
 from .window_manager import Window, WindowManager
 from .components.button import Button
 from .components.menu_title import MenuTitle
-from .components.input import Input
+from .components.ip_input import IPInput
 
 
 class PlayOnlineWindow(Window):
@@ -24,7 +23,7 @@ class PlayOnlineWindow(Window):
         button_height = 0.1 * self.menu_height
         button_margin = 0.025 * self.menu_height
 
-        self.menu_input = Input(
+        self.menu_input = IPInput(
             screen=self.screen,
             x=self.mid_x - button_width / 2,
             y=self.mid_y * 1.25 - self.menu_height / 2 + button_margin + 10,
@@ -63,7 +62,9 @@ class PlayOnlineWindow(Window):
                 if button.text == "Join":
                     print("Join")
                 elif button.text == "Host":
-                    print("Host")
+                    from .lobby_window import LobbyWindow
+
+                    WindowManager().activeWindow = LobbyWindow()
                 elif button.text == "Back":
                     from .main_menu_window import MainMenuWindow
 
