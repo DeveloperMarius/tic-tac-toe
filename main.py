@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import pygame
 from src.windows.window_manager import WindowManager
 from src.windows.main_menu_window import MainMenuWindow
