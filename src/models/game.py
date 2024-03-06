@@ -9,6 +9,7 @@ class Game(Base):
 
     id: Mapped[int] = mapped_column(Integer(), primary_key=True)
     started: Mapped[int] = mapped_column(BigInteger())
+    finished: Mapped[int] = mapped_column(BigInteger())
 
     def __repr__(self) -> str:
         return f"Game(id={self.id!r})"

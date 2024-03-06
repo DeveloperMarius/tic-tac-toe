@@ -5,13 +5,25 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE TABLE IF NOT EXISTS games (
     id INTEGER NOT NULL PRIMARY KEY,
-    started BIGINT NOT NULL
+    started BIGINT NOT NULL,
+    finished BIGINT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS game_users (
     game INTEGER NOT NULL,
     user INTEGER NOT NULL,
+    won BOOLEAN NOT NULL,
     PRIMARY KEY (game, user),
     FOREIGN KEY (game) REFERENCES games (id) ON DELETE CASCADE,
     FOREIGN KEY (user) REFERENCES users (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS chat_messages (
+    id INTEGER NOT NULL PRIMARY KEY,
+    from_user INTEGER NOT NULL,
+    to_user INTEGER NULL DEFAULT NULL,
+    message TEXT NOT NULL,
+    created BIGINT NOT NULL,
+    FOREIGN KEY (from_user) REFERENCES users (id) ON DELETE CASCADE,
+    FOREIGN KEY (to_user) REFERENCES users (id) ON DELETE CASCADE
 );
