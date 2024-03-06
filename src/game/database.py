@@ -2,7 +2,6 @@ import subprocess
 import time
 from typing import List
 
-from src.game.config import ServerConfig
 from src.models.chat_message import ChatMessage, LocalChatMessage
 from src.models.game import Game
 from src.models.game_user import GameUser
@@ -137,18 +136,23 @@ class Database:
                 return None
             return games[0]
 
-    def game_start(self, game: LocalGame) -> LocalGame:
+    def game_start(self, game: LocalGame, local_users: List[LocalUser]) -> LocalGame:
         with Session(self.engine, expire_on_commit=False) as session:
             game.started = round(time.time()*1000)
             db_game = Game(started=game.started, finished=None)
             session.add(db_game)
             session.commit()
             for player in game.players:
-                db_game_user = GameUser(game=db_game.id, user=ServerConfig.get_sessionmanager().get_user(player).db_id, won=False)
+                local_user = None
+                for _local_user in local_users:
+                    if _local_user.id == player:
+                        local_user = _local_user
+                        break
+                db_game_user = GameUser(game=db_game.id, user=local_user.db_id, won=False)
                 session.add(db_game_user)
         return game
 
-    def game_over(self, game: LocalGame):
+    def game_over(self, game: LocalGame, winner: LocalUser):
         with Session(self.engine, expire_on_commit=False) as session:
             # Update the game
             statement = update(Game).where(
@@ -160,7 +164,7 @@ class Database:
             # Update the winner
             statement2 = update(GameUser).where(
                 GameUser.game == game.db_id and
-                GameUser.user == ServerConfig.get_sessionmanager().get_user(game.current_player).db_id
+                GameUser.user == winner.db_id
             ).values({
                 'won': True
             })

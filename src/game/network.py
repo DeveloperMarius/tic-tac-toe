@@ -8,7 +8,9 @@ from src.game.events import Event, EventType
 import json
 from src.utils.json_encoder import ModelEncoder
 from threading import Thread
+from aiohttp import web
 import time
+import asyncio
 
 
 class NetworkClient:
@@ -81,16 +83,17 @@ class NetworkClient:
 
 class NetworkServer:
 
-    _sio: socketio.Server
+    _sio: socketio.AsyncServer
+    running: bool = False
 
     def __init__(self):
-        self._sio = socketio.Server()
+        self._sio = socketio.AsyncServer()
         self.call_backs()
-        self.app = socketio.WSGIApp(self._sio, static_files={
-            '/': {'content_type': 'text/html', 'filename': 'index.html'}
-        })
-        self._thread = multiprocessing.Process(target=self._start_server, args=())
-        # self._thread = Thread(target=self._start_server)
+        self._app = web.Application()
+        self._sio.attach(self._app)
+        self._runner = web.AppRunner(self._app)
+        self._thread = Thread(target=self._start_server)
+        self.running = True
 
     def __enter__(self):
         self.start_server()
@@ -101,21 +104,35 @@ class NetworkServer:
         time.sleep(5)
 
     def _start_server(self):
-        eventlet.wsgi.server(eventlet.listen(('', 5000)), self.app)
+        asyncio.run(self._start_server2())
+
+    async def _start_server2(self):
+        print('Starting server')
+        await self._runner.setup()
+        site = web.TCPSite(self._runner, 'localhost', 5000)
+        await site.start()
+        while self.running:
+            await asyncio.sleep(1)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.shutdown()
 
-    def shutdown(self):
-        self._thread.terminate()
-        self._sio.shutdown()
+    async def _shutdown(self):
+        print('Stopping server')
+        self.running = False
+        time.sleep(3)
+        await self._runner.cleanup()
 
-    def send(self, event: Event, to=None, skip_sid=None):
-        self._sio.emit(event.type.value, json.dumps(event.data, cls=ModelEncoder), to=to, skip_sid=skip_sid)
+    def shutdown(self):
+        asyncio.run(self._shutdown())
+        self._thread.join()
+
+    async def send(self, event: Event, to=None, skip_sid=None):
+        await self._sio.emit(event.type.value, json.dumps(event.data, cls=ModelEncoder), to=to, skip_sid=skip_sid)
 
     def call_backs(self):
         @self._sio.event
-        def connect(sid, headers, auth):
+        async def connect(sid, headers, auth):
             print('connect ', sid, headers, auth)
             username = headers['HTTP_USERNAME']
 
@@ -148,7 +165,7 @@ class NetworkServer:
                         message=_chat_message.message,
                         created=_chat_message.created
                     ))
-                self.send(Event(EventType.USER_JOIN, {
+                await self.send(Event(EventType.USER_JOIN, {
                     'user': user,
                     'chat_messages': chat_messages
                 }), to=user_.id)
@@ -156,7 +173,7 @@ class NetworkServer:
             return True
 
         @self._sio.event
-        def sync(sid):
+        async def sync(sid):
             print('message ', sid)
             chat_messages = []
             for _chat_message in ServerConfig.get_database().get_chat_messages_global():
@@ -167,13 +184,13 @@ class NetworkServer:
                     message=_chat_message.message,
                     created=_chat_message.created
                 ))
-            self.send(Event(EventType.SYNC, {
+            await self.send(Event(EventType.SYNC, {
                 'users': ServerConfig.get_sessionmanager().users,
                 'chat_messages': chat_messages
             }), to=sid)
 
         @self._sio.event
-        def lobby_ready(sid, data):
+        async def lobby_ready(sid, data):
             # Check if Game is already running
             if ServerConfig.get_game() is not None:
                 return
@@ -196,14 +213,15 @@ class NetworkServer:
             if all_ready:
                 game = ServerConfig.create_game([user_.id for user_ in users])
                 # Start Gameplay
-                self.send(Event(EventType.GAMEPLAY_START))
+                ServerConfig.get_database().game_start(game, ServerConfig.get_sessionmanager().users)
+                await self.send(Event(EventType.GAMEPLAY_START))
 
                 # Select user to move first
                 next_player = game.next_player_to_move()
-                self.send(Event(EventType.GAMEPLAY_MOVE_REQUEST), to=next_player)
+                await self.send(Event(EventType.GAMEPLAY_MOVE_REQUEST), to=next_player)
 
         @self._sio.event
-        def chat_message(sid, data):
+        async def chat_message(sid, data):
             _chat_message = LocalChatMessage(
                 from_user=ServerConfig.get_sessionmanager().get_user(sid).db_id,
                 to_user=data['chat_message']['to_user'],
@@ -212,14 +230,14 @@ class NetworkServer:
             )
             ServerConfig.get_database().chat_message(_chat_message)
 
-            self.send(Event(EventType.CHAT_MESSAGE, {
+            await self.send(Event(EventType.CHAT_MESSAGE, {
                 'chat_messages': [
                     chat_message
                 ]
             }))
 
         @self._sio.event
-        def gameplay_move_response(sid, data):
+        async def gameplay_move_response(sid, data):
             # Check if Game is running
             if ServerConfig.get_game() is None:
                 return
@@ -228,26 +246,26 @@ class NetworkServer:
             # Make board move
             success = game.handle_turn(data.x, data.y)
             if not success:
-                self.send(Event(EventType.GAMEPLAY_MOVE_DENIED), to=game.current_player)
+                await self.send(Event(EventType.GAMEPLAY_MOVE_DENIED), to=game.current_player)
                 return
 
             # Send back that the move was accepted
-            self.send(Event(EventType.GAMEPLAY_MOVE_ACCEPTED), to=game.current_player)
+            await self.send(Event(EventType.GAMEPLAY_MOVE_ACCEPTED), to=game.current_player)
 
             if game.check_winner():
-                self.send(Event(EventType.GAMEPLAY_STOP))
-                self.send(Event(EventType.GAMEPLAY_WINNER, {
+                await self.send(Event(EventType.GAMEPLAY_STOP))
+                await self.send(Event(EventType.GAMEPLAY_WINNER, {
                     'user': game.current_player
                 }))
-                ServerConfig.get_database().game_over(game)
+                ServerConfig.get_database().game_over(game, ServerConfig.get_sessionmanager().get_user(game.current_player))
                 return
 
             # Select user to move next
             next_player = game.next_player_to_move()
-            self.send(Event(EventType.GAMEPLAY_MOVE_REQUEST), to=next_player)
+            await self.send(Event(EventType.GAMEPLAY_MOVE_REQUEST), to=next_player)
 
         @self._sio.event
-        def disconnect(sid):
+        async def disconnect(sid):
             print('disconnect ', sid)
             # Check if user is in local user cache
             if not ServerConfig.get_sessionmanager().exists_with_id(sid):
@@ -257,7 +275,7 @@ class NetworkServer:
             user = ServerConfig.get_sessionmanager().get_user(sid)
 
             # Trigger event
-            self.send(Event(EventType.USER_LEAVE, {'user': user}), skip_sid=sid)
+            await self.send(Event(EventType.USER_LEAVE, {'user': user}), skip_sid=sid)
 
             # Save and Remove user from local user cache
             ServerConfig.get_database().save_user(user)
