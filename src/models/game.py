@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy import Integer, BigInteger
-from src.utils import Base
+from src.models.base import Base
 
 
 class Game(Base):

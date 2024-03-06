@@ -5,7 +5,6 @@ import os
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
 from sqlalchemy import String
-from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.event import listens_for
 from sqlalchemy.orm import Mapper
 
@@ -120,7 +119,3 @@ class EventHandler:
                     continue
                 if len(value) > length:
                     raise ValueError(f"{column.name} is to long. {len(value)} > {length}")
-
-
-class Base(DeclarativeBase):
-    pass

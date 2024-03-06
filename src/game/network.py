@@ -1,5 +1,3 @@
-import random
-
 import socketio
 import eventlet
 from src.models.user import LocalUser
@@ -7,6 +5,8 @@ from src.game.config import ClientConfig, ServerConfig
 from src.game.events import Event, EventType
 import json
 from src.utils.json_encoder import ModelEncoder
+from threading import Thread
+import time
 
 
 class NetworkClient:
@@ -19,14 +19,14 @@ class NetworkClient:
         self._username = username
 
     def __enter__(self):
-        self._connect()
+        self.connect()
         return self
 
     @property
     def username(self):
         return self._username
 
-    def _connect(self):
+    def connect(self):
         self.call_backs()
         self._register_default_events()
         self._sio.connect('http://localhost:5000', {
@@ -82,15 +82,21 @@ class NetworkServer:
         self.app = socketio.WSGIApp(self._sio, static_files={
             '/': {'content_type': 'text/html', 'filename': 'index.html'}
         })
+        self._thread = Thread(target=self._start_server)
 
     def __enter__(self):
         self.start_server()
         return self._sio
 
     def start_server(self):
+        self._thread.start()
+        time.sleep(5)
+
+    def _start_server(self):
         eventlet.wsgi.server(eventlet.listen(('', 5000)), self.app)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        self._thread.join()
         self.shutdown()
 
     def shutdown(self):

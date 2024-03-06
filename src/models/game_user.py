@@ -3,7 +3,7 @@ from sqlalchemy import String
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy import Integer
-from src.utils import Base
+from src.models.base import Base
 
 
 class GameUser(Base):
