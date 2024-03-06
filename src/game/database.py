@@ -1,10 +1,15 @@
 import subprocess
+import time
 from typing import List
 
-from src.models.chat_message import ChatMessage
+from src.game.config import ServerConfig
+from src.models.chat_message import ChatMessage, LocalChatMessage
+from src.models.game import Game
+from src.models.game_user import GameUser
 from src.models.user import LocalUser, User
+from src.game.game import Game as LocalGame
 import os
-from sqlalchemy import create_engine, select
+from sqlalchemy import create_engine, select, update
 from sqlalchemy.orm import Session
 from sqlalchemy import String
 from sqlalchemy.event import listens_for
@@ -93,11 +98,17 @@ class Database:
         # update(User).where(User.username == user.username).values()
         pass
 
-    def chat_message(self, chat_message: ChatMessage) -> ChatMessage:
+    def chat_message(self, chat_message: LocalChatMessage) -> ChatMessage:
         with Session(self.engine, expire_on_commit=False) as session:
-            session.add(chat_message)
+            db_chat_message = ChatMessage(
+                from_user=chat_message.from_user,
+                to_user=chat_message.to_user,
+                message=chat_message.message,
+                created=chat_message.created
+            )
+            session.add(db_chat_message)
             session.commit()
-        return chat_message
+        return db_chat_message
 
     def get_chat_messages_private(self, user1: int, user2: int) -> List[ChatMessage]:
         with Session(self.engine, expire_on_commit=False) as session:
@@ -116,6 +127,45 @@ class Database:
             response = session.scalars(statement)
             chat_messages = response.fetchall()
         return list(chat_messages)
+
+    def get_game(self, game: LocalGame) -> Game | None:
+        with Session(self.engine, expire_on_commit=False) as session:
+            statement = select(Game).where(Game.id == game.db_id)
+            response = session.scalars(statement)
+            games = response.fetchall()
+            if len(games) == 0:
+                return None
+            return games[0]
+
+    def game_start(self, game: LocalGame) -> LocalGame:
+        with Session(self.engine, expire_on_commit=False) as session:
+            game.started = round(time.time()*1000)
+            db_game = Game(started=game.started, finished=None)
+            session.add(db_game)
+            session.commit()
+            for player in game.players:
+                db_game_user = GameUser(game=db_game.id, user=ServerConfig.get_sessionmanager().get_user(player).db_id, won=False)
+                session.add(db_game_user)
+        return game
+
+    def game_over(self, game: LocalGame):
+        with Session(self.engine, expire_on_commit=False) as session:
+            # Update the game
+            statement = update(Game).where(
+                GameUser.game == game.db_id
+            ).values({
+                'finished': round(time.time()*1000)
+            })
+            session.execute(statement)
+            # Update the winner
+            statement2 = update(GameUser).where(
+                GameUser.game == game.db_id and
+                GameUser.user == ServerConfig.get_sessionmanager().get_user(game.current_player).db_id
+            ).values({
+                'won': True
+            })
+            session.execute(statement2)
+        return
 
 
 class EventHandler:

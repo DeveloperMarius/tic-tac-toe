@@ -1,7 +1,7 @@
 import socketio
 import eventlet
 
-from src.models.chat_message import ChatMessage
+from src.models.chat_message import LocalChatMessage
 from src.models.user import LocalUser
 from src.game.config import ClientConfig, ServerConfig
 from src.game.events import Event, EventType
@@ -63,7 +63,7 @@ class NetworkClient:
             if 'chat_messages' in parsed_data:
                 chat_messages = []
                 for chat_message in parsed_data['chat_messages']:
-                    chat_messages.append(ChatMessage(**chat_message))
+                    chat_messages.append(LocalChatMessage(**chat_message))
                 parsed_data['chat_messages'] = chat_messages
             event_type = EventType(event)
             ClientConfig.get_eventmanager().trigger(Event(event_type, parsed_data))
@@ -138,9 +138,18 @@ class NetworkServer:
             for user_ in ServerConfig.get_sessionmanager().users:
                 if user_.id == sid:
                     continue
+                chat_messages = []
+                for _chat_message in ServerConfig.get_database().get_chat_messages_private(user.db_id, user_.db_id):
+                    chat_messages.append(LocalChatMessage(
+                        db_id=_chat_message.id,
+                        from_user=_chat_message.from_user,
+                        to_user=_chat_message.to_user,
+                        message=_chat_message.message,
+                        created=_chat_message.created
+                    ))
                 self.send(Event(EventType.USER_JOIN, {
                     'user': user,
-                    'chat_messages': ServerConfig.get_database().get_chat_messages_private(user.db_id, user_.db_id)
+                    'chat_messages': chat_messages
                 }), to=user_.id)
 
             return True
@@ -148,9 +157,18 @@ class NetworkServer:
         @self._sio.event
         def sync(sid):
             print('message ', sid)
+            chat_messages = []
+            for _chat_message in ServerConfig.get_database().get_chat_messages_global():
+                chat_messages.append(LocalChatMessage(
+                    db_id=_chat_message.id,
+                    from_user=_chat_message.from_user,
+                    to_user=_chat_message.to_user,
+                    message=_chat_message.message,
+                    created=_chat_message.created
+                ))
             self.send(Event(EventType.SYNC, {
                 'users': ServerConfig.get_sessionmanager().users,
-                'chat_messages': ServerConfig.get_database().get_chat_messages_global()
+                'chat_messages': chat_messages
             }), to=sid)
 
         @self._sio.event
@@ -185,11 +203,17 @@ class NetworkServer:
 
         @self._sio.event
         def chat_message(sid, data):
-            chat_message = data['chat_message']
+            _chat_message = LocalChatMessage(
+                from_user=ServerConfig.get_sessionmanager().get_user(sid).db_id,
+                to_user=data['chat_message']['to_user'],
+                message=data['chat_message']['message'],
+                created=round(time.time()*1000)
+            )
+            ServerConfig.get_database().chat_message(_chat_message)
 
             self.send(Event(EventType.CHAT_MESSAGE, {
                 'chat_messages': [
-
+                    chat_message
                 ]
             }))
 
@@ -201,7 +225,7 @@ class NetworkServer:
             game = ServerConfig.get_game()
 
             # Make board move
-            success = game.move(data.x, data.y)
+            success = game.handle_turn(data.x, data.y)
             if not success:
                 self.send(Event(EventType.GAMEPLAY_MOVE_DENIED), to=game.current_player)
                 return
@@ -214,6 +238,7 @@ class NetworkServer:
                 self.send(Event(EventType.GAMEPLAY_WINNER, {
                     'user': game.current_player
                 }))
+                ServerConfig.get_database().game_over(game)
                 return
 
             # Select user to move next

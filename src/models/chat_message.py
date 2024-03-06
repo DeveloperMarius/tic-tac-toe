@@ -15,3 +15,38 @@ class ChatMessage(Base):
 
     def __repr__(self) -> str:
         return f"ChatMessage(id={self.id!r})"
+
+class LocalChatMessage:
+
+    _db_id: int | None
+    _from_user: int
+    _to_user: int = None
+    _message: str
+    _created: int
+
+    def __init__(self, from_user: int, message: str, created: int, to_user: int | None = None, db_id: int | None = None):
+        self._from_user = from_user
+        self._to_user = to_user
+        self._message = message
+        self._created = created
+        self._db_id = db_id
+
+    @property
+    def db_id(self) -> int:
+        return self._db_id
+
+    @property
+    def from_user(self) -> int:
+        return self._from_user
+
+    @property
+    def to_user(self) -> int | None:
+        return self._to_user
+
+    @property
+    def message(self) -> str:
+        return self._message
+
+    @property
+    def created(self) -> int:
+        return self._created
