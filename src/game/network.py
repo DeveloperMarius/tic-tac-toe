@@ -1,6 +1,6 @@
 import socketio
 import eventlet
-
+import multiprocessing
 from src.models.chat_message import LocalChatMessage
 from src.models.user import LocalUser
 from src.game.config import ClientConfig, ServerConfig
@@ -89,7 +89,8 @@ class NetworkServer:
         self.app = socketio.WSGIApp(self._sio, static_files={
             '/': {'content_type': 'text/html', 'filename': 'index.html'}
         })
-        self._thread = Thread(target=self._start_server)
+        self._thread = multiprocessing.Process(target=self._start_server, args=())
+        # self._thread = Thread(target=self._start_server)
 
     def __enter__(self):
         self.start_server()
@@ -103,10 +104,10 @@ class NetworkServer:
         eventlet.wsgi.server(eventlet.listen(('', 5000)), self.app)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self._thread.join()
         self.shutdown()
 
     def shutdown(self):
+        self._thread.terminate()
         self._sio.shutdown()
 
     def send(self, event: Event, to=None, skip_sid=None):
