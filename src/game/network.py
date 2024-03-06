@@ -1,5 +1,7 @@
 import socketio
 import eventlet
+
+from src.models.chat_message import ChatMessage
 from src.models.user import LocalUser
 from src.game.config import ClientConfig, ServerConfig
 from src.game.events import Event, EventType
@@ -58,6 +60,11 @@ class NetworkClient:
             parsed_data = json.loads(data)
             if 'user' in parsed_data:
                 parsed_data['user'] = LocalUser(**parsed_data['user'])
+            if 'chat_messages' in parsed_data:
+                chat_messages = []
+                for chat_message in parsed_data['chat_messages']:
+                    chat_messages.append(ChatMessage(**chat_message))
+                parsed_data['chat_messages'] = chat_messages
             event_type = EventType(event)
             ClientConfig.get_eventmanager().trigger(Event(event_type, parsed_data))
 
@@ -128,7 +135,13 @@ class NetworkServer:
             ServerConfig.get_sessionmanager().add_user(user)
 
             # Trigger event
-            self.send(Event(EventType.USER_JOIN, {'user': user}), skip_sid=sid)
+            for user_ in ServerConfig.get_sessionmanager().users:
+                if user_.id == sid:
+                    continue
+                self.send(Event(EventType.USER_JOIN, {
+                    'user': user,
+                    'chat_messages': ServerConfig.get_database().get_chat_messages_private(user.db_id, user_.db_id)
+                }), to=user_.id)
 
             return True
 
@@ -136,7 +149,8 @@ class NetworkServer:
         def sync(sid):
             print('message ', sid)
             self.send(Event(EventType.SYNC, {
-                'users': ServerConfig.get_sessionmanager().users
+                'users': ServerConfig.get_sessionmanager().users,
+                'chat_messages': ServerConfig.get_database().get_chat_messages_global()
             }), to=sid)
 
         @self._sio.event
@@ -168,6 +182,16 @@ class NetworkServer:
                 # Select user to move first
                 next_player = game.next_player_to_move()
                 self.send(Event(EventType.GAMEPLAY_MOVE_REQUEST), to=next_player)
+
+        @self._sio.event
+        def chat_message(sid, data):
+            chat_message = data['chat_message']
+
+            self.send(Event(EventType.CHAT_MESSAGE, {
+                'chat_messages': [
+
+                ]
+            }))
 
         @self._sio.event
         def gameplay_move_response(sid, data):

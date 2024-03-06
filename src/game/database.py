@@ -1,5 +1,7 @@
 import subprocess
 from typing import List
+
+from src.models.chat_message import ChatMessage
 from src.models.user import LocalUser, User
 import os
 from sqlalchemy import create_engine, select
@@ -90,6 +92,31 @@ class Database:
     def save_user(self, user: LocalUser):
         # update(User).where(User.username == user.username).values()
         pass
+
+    def chat_message(self, chat_message: ChatMessage) -> ChatMessage:
+        with Session(self.engine, expire_on_commit=False) as session:
+            session.add(chat_message)
+            session.commit()
+        return chat_message
+
+    def get_chat_messages_private(self, user1: int, user2: int) -> List[ChatMessage]:
+        with Session(self.engine, expire_on_commit=False) as session:
+            statement = select(ChatMessage).where(
+                (ChatMessage.to_user == user1 and ChatMessage.from_user == user2)
+                or
+                (ChatMessage.to_user == user2 and ChatMessage.from_user == user1)
+            )
+            response = session.scalars(statement)
+            chat_messages = response.fetchall()
+        return list(chat_messages)
+
+    def get_chat_messages_global(self) -> List[ChatMessage]:
+        with Session(self.engine, expire_on_commit=False) as session:
+            statement = select(ChatMessage).where(ChatMessage.to_user is None)
+            response = session.scalars(statement)
+            chat_messages = response.fetchall()
+        return list(chat_messages)
+
 
 class EventHandler:
 
