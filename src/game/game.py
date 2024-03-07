@@ -1,16 +1,16 @@
 import random
 
-from models.player import Player
+from ..models.player import Player
 from ..windows.components.tictactoe_field import FieldRect
 
 
 class Game:
 
     def __init__(self) -> None:
+        self.winner = 0
         # 0 = Nothing
         # 1 = X
         # 2 = O
-        self.winner = 0
         # randomly chosses the order of the players ([1, 2] or [2, 1])
         self.players = random.sample([1, 2], 2)
         self.player_1 = Player("Player 1", self.players[0])
@@ -30,11 +30,18 @@ class Game:
             return
 
         # Update the field
-        fields[index].checked = self.player
-        self.board[index // 3][index % 3] = self.player
-
-        # Change the player
-        self.player = 1 if self.player == 2 else 2
+        fields[index].checked = self.current_player.symbol
+        self.board[index // 3][index % 3] = self.current_player.symbol
+        print(
+            "Player "
+            + str(self.current_player)
+            + " checked field "
+            + str(index)
+            + " with symbol "
+            + str(self.current_player.symbol)
+        )
+        # Change the current player
+        switch_player(self)
 
         # Check for winner
         self.check_winner()
@@ -67,13 +74,14 @@ class Game:
 
         return False
 
+
 # Switches the player and set the isMyTurn attribute
 def switch_player(self):
-    if self.current_player == self.player1:
-        self.current_player = self.player2
-        self.player1.isMyTurn = False
-        self.player2.isMyTurn = True
+    if self.current_player == self.player_1:
+        self.current_player = self.player_2
+        self.player_1.isMyTurn = False
+        self.player_2.isMyTurn = True
     else:
-        self.current_player = self.player1
-        self.player2.isMyTurn = False
-        self.player1.isMyTurn = True
+        self.current_player = self.player_1
+        self.player_2.isMyTurn = False
+        self.player_1.isMyTurn = True
