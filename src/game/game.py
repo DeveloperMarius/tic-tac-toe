@@ -48,28 +48,42 @@ class Game:
 
         return fields
 
+    # checks whether one of the rows in the board contains three identical and non-zero values
     def hoizontal_win(self):
         for row in self.board:
-            symbol = row[0]
-            if row == [symbol, symbol, symbol]:
+            if row[0] == row[1] == row[2] != 0:
                 return True
-
         return False
 
+    # checks whether one of the columns in the board contains three identical and non-zero values
     def vertical_win(self):
-        list(zip(self.board[::-1]))
+        for col in range(3):
+            if self.board[0][col] == self.board[1][col] == self.board[2][col] != 0:
+                return True
+        return False
 
+    # checks whether one of the diagonals in the board contains three identical and non-zero values
     def diagonal_win(self):
-        pass
+        # Diagonal from left to right
+        if self.board[0][0] == self.board[1][1] == self.board[2][2] != 0:
+            return True
+        # Diagonal from right to left
+        if self.board[0][2] == self.board[1][1] == self.board[2][0] != 0:
+            return True
+        return False
 
     def check_winner(self) -> bool:
+        self.winner = self.current_player
         if self.hoizontal_win():
+            print("Player " + self.winner.name + " has won with horizontal position")
             return True
 
         if self.vertical_win():
+            print("Player " + self.winner.name + " has won with vertical position")
             return True
 
         if self.diagonal_win():
+            print("Player " + self.winner.name + " has won with diagonal position")
             return True
 
         return False
