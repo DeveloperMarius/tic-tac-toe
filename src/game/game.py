@@ -26,8 +26,8 @@ class Game:
 
     def handle_turn(self, index: int, fields: list[FieldRect]):
         # Check if the field is already checked
-        if self.board[index // 3][index % 3] != 0:
-            return
+        if self.winner != 0:
+            return False
 
         # Update the field
         fields[index].checked = self.current_player.symbol
@@ -73,16 +73,19 @@ class Game:
         return False
 
     def check_winner(self) -> bool:
-        self.winner = self.current_player
+
         if self.hoizontal_win():
+            self.winner = self.current_player
             print("Player " + self.winner.name + " has won with horizontal position")
             return True
 
         if self.vertical_win():
+            self.winner = self.current_player
             print("Player " + self.winner.name + " has won with vertical position")
             return True
 
         if self.diagonal_win():
+            self.winner = self.current_player
             print("Player " + self.winner.name + " has won with diagonal position")
             return True
 
