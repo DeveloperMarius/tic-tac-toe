@@ -25,7 +25,7 @@ class Game:
             self.current_player = self.player_2
 
     def handle_turn(self, index: int, fields: list[FieldRect]):
-        # Check if the field is already checked
+        # checks if a winner already exists
         if self.winner != 0:
             return False
 
