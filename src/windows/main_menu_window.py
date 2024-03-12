@@ -13,7 +13,7 @@ class MainMenuWindow(Window):
         self.menu_height = 0.75 * self.height
 
         self.menu_title = MenuTitle(
-            title="Main Menu",
+            title="Tic Tac Toe",
             x=self.mid_x,
             y=self.mid_y - self.menu_height / 2 + self.mid_y / 6,
         )
@@ -29,7 +29,7 @@ class MainMenuWindow(Window):
                 screen=self.screen,
                 text=text,
                 x=self.mid_x - button_width / 2,
-                y=self.mid_y * 1.25
+                y=self.mid_y * 1.3
                 - self.menu_height / 2
                 + i * button_height
                 + button_margin * (i + 1)

@@ -7,8 +7,8 @@ class MenuTitle:
         title: str,
         x: int,
         y: int,
-        font: str = "Lucida Sans",
-        color: tuple[int, int, int] = (255, 0, 0),
+        font: str = "Courier New",
+        color: tuple[int, int, int] = (20, 33, 61),
     ):
         self.title = title
         self.x = x
@@ -18,7 +18,7 @@ class MenuTitle:
 
     def draw(self, screen: pygame.Surface):
         pygame.font.init()
-        font = pygame.font.SysFont(self.font, 54, False)
+        font = pygame.font.SysFont(self.font, 54, True)
         text = font.render(self.title, True, self.color)
         text_rect = text.get_rect(center=(self.x, self.y))
         screen.blit(text, text_rect)

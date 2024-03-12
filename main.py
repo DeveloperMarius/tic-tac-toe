@@ -30,7 +30,7 @@ class Main:
                 self.windowManager.activeWindow.handleEvent(event)
 
     def render(self):
-        self.window.fill("white")
+        self.window.fill((7, 12, 23))
         self.windowManager.activeWindow.draw(self.window)
         pygame.display.flip()
 
