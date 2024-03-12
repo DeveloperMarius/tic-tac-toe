@@ -100,14 +100,6 @@ class TicTacToeField(BaseComponent):
             ),
         ]
 
-    @property
-    def field(self):
-        return self._field
-
-    @field.setter
-    def field(self, value):
-        self._field = value
-
     def handle_events(self, event):
         if event.type != pygame.MOUSEBUTTONDOWN:
             return

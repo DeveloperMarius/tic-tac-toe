@@ -1,5 +1,8 @@
 import random
 
+from ..models.ai_player import DummyAIPlayer
+
+# from ..models.ai_player import SmartAIPlayer
 from ..models.player import Player
 from ..windows.components.tictactoe_field import FieldRect
 
@@ -14,7 +17,7 @@ class Game:
         # randomly chosses the order of the players ([1, 2] or [2, 1])
         self.players = random.sample([1, 2], 2)
         self.player_1 = Player("Player 1", self.players[0])
-        self.player_2 = Player("Player 2", self.players[1])
+        self.player_2 = DummyAIPlayer("Player 2", self.players[1])
         self.board = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
         # set the player who starts
         if self.player_1.symbol == 1:
@@ -31,6 +34,8 @@ class Game:
 
         # Update the field
         fields[index].checked = self.current_player.symbol
+        print("Index: " + str(index) + " Symbol: " + str(self.current_player.symbol))
+        print((index // 3), (index % 3))
         self.board[index // 3][index % 3] = self.current_player.symbol
         print(
             "Player "
@@ -41,10 +46,16 @@ class Game:
             + str(self.current_player.symbol)
         )
         # Change the current player
-        switch_player(self)
+        self.switch_player()
 
         # Check for winner
         self.check_winner()
+
+        # let ai player make a move
+        if isinstance(self.current_player, DummyAIPlayer) and self.winner == 0:
+            print("AI is making a move")
+            index = self.current_player.make_random_move(self)
+            fields = self.handle_turn(index, fields)
 
         return fields
 
@@ -91,14 +102,19 @@ class Game:
 
         return False
 
+    # Switches the player and set the isMyTurn attribute
+    def switch_player(self):
+        if self.current_player == self.player_1:
+            self.current_player = self.player_2
+            self.player_1.isMyTurn = False
+            self.player_2.isMyTurn = True
+        else:
+            self.current_player = self.player_1
+            self.player_2.isMyTurn = False
+            self.player_1.isMyTurn = True
 
-# Switches the player and set the isMyTurn attribute
-def switch_player(self):
-    if self.current_player == self.player_1:
-        self.current_player = self.player_2
-        self.player_1.isMyTurn = False
-        self.player_2.isMyTurn = True
-    else:
-        self.current_player = self.player_1
-        self.player_2.isMyTurn = False
-        self.player_1.isMyTurn = True
+    def handle_ai_first(self, fields: list[FieldRect]):
+        if isinstance(self.current_player, DummyAIPlayer):
+            index = self.current_player.make_random_move(self)
+            fields = self.handle_turn(index, fields)
+        return fields

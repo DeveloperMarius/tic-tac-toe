@@ -31,6 +31,10 @@ class GameWindow(Window):
             self.game.handle_turn,
         )
 
+        self.tictactoe_field.field_rects = self.game.handle_ai_first(
+            self.tictactoe_field.field_rects
+        )
+
     def handleEvent(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             self.tictactoe_field.handle_events(event)
