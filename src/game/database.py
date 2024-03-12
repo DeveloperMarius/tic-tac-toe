@@ -1,12 +1,11 @@
 import subprocess
 import time
 from typing import List
-
-from src.models.chat_message import ChatMessage, LocalChatMessage
+from src.models.chat_message import ChatMessage
 from src.models.game import Game
 from src.models.game_user import GameUser
 from src.models.user import LocalUser, User
-from src.game.game import Game as LocalGame
+from src.game.server_game import ServerGame as LocalGame
 import os
 from sqlalchemy import create_engine, select, update
 from sqlalchemy.orm import Session

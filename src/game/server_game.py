@@ -1,8 +1,7 @@
 import random
-from src.windows.components.tictactoe_field import FieldRect
 
 
-class Game:
+class ServerGame:
 
     _db_id: int | None
     _current_player: str | None = None

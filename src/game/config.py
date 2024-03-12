@@ -2,7 +2,7 @@ from typing import List
 
 from src.game.database import Database, SessionManager
 from src.game.events import EventManager
-from src.game.game import Game
+from src.game.server_game import ServerGame
 
 
 class ClientConfig:
@@ -28,7 +28,7 @@ class ServerConfig:
     lobby_max_players = 2
     _database_instance: Database | None = None
     _sessionmanager_instance: Database | None = None
-    _game_instance: Game | None = None
+    _game_instance: ServerGame | None = None
 
     @staticmethod
     def get_database() -> Database:
@@ -43,12 +43,12 @@ class ServerConfig:
         return ServerConfig._sessionmanager_instance
 
     @staticmethod
-    def get_game() -> Game | None:
+    def get_game() -> ServerGame | None:
         return ServerConfig._game_instance
 
     @staticmethod
-    def create_game(player_ids: List[str]) -> Game:
-        ServerConfig._game_instance = Game(player_ids)
+    def create_game(player_ids: List[str]) -> ServerGame:
+        ServerConfig._game_instance = ServerGame(player_ids)
         return ServerConfig.get_game()
 
     @staticmethod
