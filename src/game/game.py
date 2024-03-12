@@ -4,6 +4,7 @@ from src.windows.components.tictactoe_field import FieldRect
 
 class Game:
 
+    _db_id: int | None
     _current_player: str | None = None
 
     def __init__(self, player_ids) -> None:
@@ -11,14 +12,14 @@ class Game:
         # 1 = X
         # 2 = O
         self.winner = 0
-        self.players = player_ids
+        self._players = player_ids
         self.board = [
             [None, None, None],
             [None, None, None],
             [None, None, None]
         ]
 
-    def move(self, x: int, y: int) -> bool:
+    def handle_turn(self, x: int, y: int) -> bool:
         if self.board[y][x] is not None:
             return False
 
@@ -35,25 +36,16 @@ class Game:
         return self._current_player
 
     @property
+    def db_id(self) -> int:
+        return self._db_id
+
+    @property
     def current_player(self) -> str:
         return self._current_player
 
-    def handle_turn(self, index: int, fields: list[FieldRect]):
-        # Check if the field is already checked
-        if self.board[index // 3][index % 3] != 0:
-            return
-
-        # Update the field
-        fields[index].checked = self.player
-        self.board[index // 3][index % 3] = self.player
-
-        # Change the player
-        self.player = 1 if self.player == 2 else 2
-
-        # Check for winner
-        self.check_winner()
-
-        return fields
+    @property
+    def players(self) -> list[str]:
+        return self._players
 
     def hoizontal_win(self):
         for row in self.board:

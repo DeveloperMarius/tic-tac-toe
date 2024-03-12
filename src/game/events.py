@@ -26,6 +26,8 @@ class EventType(Enum):
     GAMEPLAY_STOP = 'gameplay_stop'
     # Sent from the server when a player has won
     GAMEPLAY_WINNER = 'gameplay_winner'
+    # Send / receive a message
+    CHAT_MESSAGE = 'chat_message'
 
 
 class Event:

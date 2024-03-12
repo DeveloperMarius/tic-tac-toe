@@ -1,8 +1,7 @@
 from sqlalchemy import ForeignKey
-from sqlalchemy import String
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
-from sqlalchemy import Integer
+from sqlalchemy import Integer, Boolean
 from src.models.base import Base
 
 
@@ -10,7 +9,8 @@ class GameUser(Base):
     __tablename__ = "game_users"
 
     game: Mapped[int] = mapped_column(Integer(), ForeignKey("games.id"), primary_key=True)
-    user: Mapped[str] = mapped_column(String(), ForeignKey("users.id"), primary_key=True)
+    user: Mapped[int] = mapped_column(Integer(), ForeignKey("users.id"), primary_key=True)
+    won: Mapped[bool] = mapped_column(Boolean())
 
     def __repr__(self) -> str:
-        return f"Game(game={self.game!r}, user={self.user!r})"
+        return f"GameUser(game={self.game!r}, user={self.user!r})"
