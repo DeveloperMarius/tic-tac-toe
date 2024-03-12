@@ -1,7 +1,5 @@
 import socketio
-import eventlet
-import multiprocessing
-from src.models.chat_message import LocalChatMessage
+from src.models.chat_message import LocalChatMessage, ChatMessage
 from src.models.user import LocalUser
 from src.game.config import ClientConfig, ServerConfig
 from src.game.events import Event, EventType
@@ -223,18 +221,30 @@ class NetworkServer:
         @self._sio.event
         async def chat_message(sid, data):
             _chat_message = LocalChatMessage(
-                from_user=ServerConfig.get_sessionmanager().get_user(sid).db_id,
+                from_user=sid,
                 to_user=data['chat_message']['to_user'],
                 message=data['chat_message']['message'],
                 created=round(time.time()*1000)
             )
-            ServerConfig.get_database().chat_message(_chat_message)
-
-            await self.send(Event(EventType.CHAT_MESSAGE, {
-                'chat_messages': [
-                    chat_message
-                ]
-            }))
+            ServerConfig.get_database().chat_message(ChatMessage(
+                id=_chat_message.db_id,
+                from_user=ServerConfig.get_sessionmanager().get_user(_chat_message.from_user).db_id,
+                to_user=ServerConfig.get_sessionmanager().get_user(_chat_message.to_user).db_id if _chat_message.to_user is not None else None,
+                message=_chat_message.message,
+                created=_chat_message.created
+            ))
+            if data['chat_message']['to_user'] is None:
+                await self.send(Event(EventType.CHAT_MESSAGE, {
+                    'chat_messages': [
+                        _chat_message
+                    ]
+                }))
+            else:
+                await self.send(Event(EventType.CHAT_MESSAGE, {
+                    'chat_messages': [
+                        _chat_message
+                    ]
+                }), to=data['chat_message']['to_user'])
 
         @self._sio.event
         async def gameplay_move_response(sid, data):

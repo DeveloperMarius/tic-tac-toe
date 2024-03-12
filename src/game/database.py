@@ -97,17 +97,11 @@ class Database:
         # update(User).where(User.username == user.username).values()
         pass
 
-    def chat_message(self, chat_message: LocalChatMessage) -> ChatMessage:
+    def chat_message(self, chat_message: ChatMessage) -> ChatMessage:
         with Session(self.engine, expire_on_commit=False) as session:
-            db_chat_message = ChatMessage(
-                from_user=chat_message.from_user,
-                to_user=chat_message.to_user,
-                message=chat_message.message,
-                created=chat_message.created
-            )
-            session.add(db_chat_message)
+            session.add(chat_message)
             session.commit()
-        return db_chat_message
+        return chat_message
 
     def get_chat_messages_private(self, user1: int, user2: int) -> List[ChatMessage]:
         with Session(self.engine, expire_on_commit=False) as session:

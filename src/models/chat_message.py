@@ -9,22 +9,23 @@ class ChatMessage(Base):
 
     id: Mapped[int] = mapped_column(Integer(), primary_key=True)
     from_user: Mapped[int] = mapped_column(Integer(), ForeignKey("users.id"), primary_key=True)
-    to_user: Mapped[int] = mapped_column(Integer(), ForeignKey("users.id"), primary_key=True)
+    to_user: Mapped[int] = mapped_column(Integer(), ForeignKey("users.id"), primary_key=True, nullable=True)
     message: Mapped[str] = mapped_column(String(1000))
     created: Mapped[int] = mapped_column(BigInteger())
 
     def __repr__(self) -> str:
         return f"ChatMessage(id={self.id!r})"
 
+
 class LocalChatMessage:
 
     _db_id: int | None
-    _from_user: int
-    _to_user: int = None
+    _from_user: str
+    _to_user: str = None
     _message: str
     _created: int
 
-    def __init__(self, from_user: int, message: str, created: int, to_user: int | None = None, db_id: int | None = None):
+    def __init__(self, from_user: str, message: str, created: int, to_user: str | None = None, db_id: int | None = None):
         self._from_user = from_user
         self._to_user = to_user
         self._message = message
@@ -36,11 +37,11 @@ class LocalChatMessage:
         return self._db_id
 
     @property
-    def from_user(self) -> int:
+    def from_user(self) -> str:
         return self._from_user
 
     @property
-    def to_user(self) -> int | None:
+    def to_user(self) -> str | None:
         return self._to_user
 
     @property
