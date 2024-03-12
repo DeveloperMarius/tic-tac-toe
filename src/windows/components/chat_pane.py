@@ -67,8 +67,9 @@ class ChatPane(BaseComponent):
             ) < self.y + self.height * 0.07:
                 continue
 
+            from_user_obj = ClientConfig.get_sessionmanager().get_user(chat_message.from_user)
             rendered_message = self.font.render(
-                f"{ClientConfig.get_sessionmanager().get_user(chat_message.from_user).username}: {chat_message.message}",
+                f"{from_user_obj.username if from_user_obj is not None else chat_message.from_user_username}: {chat_message.message}",
                 True,
                 self.text_color,
             )

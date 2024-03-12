@@ -18,17 +18,11 @@ class NetworkClient:
     @staticmethod
     def get_instance():
         if NetworkClient._static_network_client is None:
-            print('CREATE NEW')
             NetworkClient._static_network_client = NetworkClient()
         return NetworkClient._static_network_client
 
     _sio: socketio.Client
     _username: str
-
-    #def __new__(cls):
-    #    if not hasattr(cls, "instance"):
-    #        cls.instance = super(NetworkClient, cls).__new__(cls)
-    #    return cls.instance
 
     def __init__(self):
         self._sio = socketio.Client()
@@ -61,10 +55,8 @@ class NetworkClient:
         ClientConfig.get_eventmanager().on(EventType.SYNC, lambda event: self._event_sync(event))
 
     def _event_sync(self, event):
-        users = [LocalUser(**user) for user in event.data['users']]
-        ClientConfig.get_sessionmanager().set_users(users)
-        chat_messages = [LocalChatMessage(**chat_message) for chat_message in event.data['chat_messages']]
-        ClientConfig.get_sessionmanager().set_chat_messages(chat_messages)
+        ClientConfig.get_sessionmanager().set_users(event.data['users'])
+        ClientConfig.get_sessionmanager().set_chat_messages(event.data['chat_messages'])
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._sio.disconnect()
@@ -83,8 +75,21 @@ class NetworkClient:
             if 'chat_messages' in parsed_data:
                 chat_messages = []
                 for chat_message in parsed_data['chat_messages']:
-                    chat_messages.append(LocalChatMessage(**chat_message))
+                    from_user = ClientConfig.get_sessionmanager().get_user_by_dbid(chat_message['from_user'])
+                    chat_messages.append(LocalChatMessage(
+                        from_user.id if from_user is not None else None,
+                        chat_message['message'],
+                        chat_message['created'],
+                        ClientConfig.get_sessionmanager().get_user_by_dbid(chat_message['to_user']).id if chat_message['to_user'] is not None else None,
+                        chat_message['db_id'],
+                        chat_message['from_user_username']
+                    ))
                 parsed_data['chat_messages'] = chat_messages
+            if 'users' in parsed_data:
+                users = []
+                for user in parsed_data['users']:
+                    users.append(LocalUser(**user))
+                parsed_data['users'] = users
             event_type = EventType(event)
             ClientConfig.get_eventmanager().trigger(Event(event_type, parsed_data))
 
@@ -185,7 +190,8 @@ class NetworkServer:
                         from_user=_chat_message.from_user,
                         to_user=_chat_message.to_user,
                         message=_chat_message.message,
-                        created=_chat_message.created
+                        created=_chat_message.created,
+                        from_user_username=ServerConfig.get_database().get_user_by_id(_chat_message.from_user).username
                     ))
                 await self.send(Event(EventType.USER_JOIN, {
                     'user': user,
@@ -204,7 +210,8 @@ class NetworkServer:
                     from_user=_chat_message.from_user,
                     to_user=_chat_message.to_user,
                     message=_chat_message.message,
-                    created=_chat_message.created
+                    created=_chat_message.created,
+                    from_user_username=ServerConfig.get_database().get_user_by_id(_chat_message.from_user).username
                 ))
             await self.send(Event(EventType.SYNC, {
                 'users': ServerConfig.get_sessionmanager().users,
@@ -248,7 +255,9 @@ class NetworkServer:
                 from_user=sid,
                 to_user=data['chat_message']['to_user'],
                 message=data['chat_message']['message'],
-                created=round(time.time()*1000)
+                created=round(time.time()*1000),
+                db_id=None,
+                from_user_username=ServerConfig.get_sessionmanager().get_user(sid).username
             )
             ServerConfig.get_database().chat_message(ChatMessage(
                 id=_chat_message.db_id,

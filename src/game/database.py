@@ -45,6 +45,12 @@ class SessionManager:
                 return user
         return None
 
+    def get_user_by_dbid(self, id: str) -> LocalUser | None:
+        for user in self._users:
+            if user.db_id == id:
+                return user
+        return None
+
     def exists_with_username(self, username: str) -> bool:
         return self.get_user_by_username(username) is not None
 
@@ -94,6 +100,17 @@ class Database:
     def engine(self):
         return self._engine
 
+    def get_user_by_id(self, user: int) -> User:
+        with Session(self.engine, expire_on_commit=False) as session:
+            statement = select(User).where(User.id == user)
+            response = session.scalars(statement)
+            users = response.fetchall()
+            if len(users) == 0:
+                return None
+            # Use User from db
+            db_user = users[0]
+        return db_user
+
     def get_user(self, user: LocalUser):
         with Session(self.engine, expire_on_commit=False) as session:
             statement = select(User).where(User.username == user.username)
@@ -110,6 +127,13 @@ class Database:
                 # Use User from db
                 db_user = users[0]
         return db_user
+
+    def users(self) -> List[User]:
+        with Session(self.engine, expire_on_commit=False) as session:
+            statement = select(User)
+            response = session.scalars(statement)
+            users = response.fetchall()
+        return list(users)
 
     def save_user(self, user: LocalUser):
         # update(User).where(User.username == user.username).values()
@@ -134,7 +158,7 @@ class Database:
 
     def get_chat_messages_global(self) -> List[ChatMessage]:
         with Session(self.engine, expire_on_commit=False) as session:
-            statement = select(ChatMessage).where(ChatMessage.to_user is None)
+            statement = select(ChatMessage).where(ChatMessage.to_user == None)
             response = session.scalars(statement)
             chat_messages = response.fetchall()
         return list(chat_messages)
