@@ -62,28 +62,24 @@ class PlayOnlineWindow(Window):
                 if not button.rect.collidepoint(event.pos):
                     continue
                 if button.text == "Join":
-                    print("Join")
-                    print(self.menu_input.text)
                     # todo check if valid ip
                     if self.menu_input.text == "Enter IP Address":
                         return
-                    ClientConfig.username = "USERNAME2"
-                    NetworkClient.get_instance().connect(ClientConfig.username, self.menu_input.text)
+                    ClientConfig.set_username("USERNAME2")
+                    NetworkClient.get_instance().connect(ClientConfig.get_username(), self.menu_input.text)
                     # todo start game window
                     from .lobby_window import LobbyWindow
                     WindowManager().activeWindow = LobbyWindow()
-                    LobbyWindow().lobby_pane.player_name = ClientConfig.username
                 elif button.text == "Host":
 
-                    NetworkServer().start_server()
+                    NetworkServer.get_instance().start_server()
                     # TODO SET USERNAME
-                    ClientConfig.username = "USERNAME"
-                    NetworkClient.get_instance().connect(ClientConfig.username, '127.0.0.1')
+                    ClientConfig.set_username("USERNAME")
+                    NetworkClient.get_instance().connect(ClientConfig.get_username(), '127.0.0.1')
 
                     from .lobby_window import LobbyWindow
 
                     WindowManager().activeWindow = LobbyWindow()
-                    LobbyWindow().host_name = ClientConfig.username
                 elif button.text == "Back":
                     from .main_menu_window import MainMenuWindow
 

@@ -40,6 +40,12 @@ class ServerConfig:
     _game_instance: ServerGame | None = None
 
     @staticmethod
+    def reset():
+        ServerConfig._database_instance = None
+        ServerConfig._sessionmanager_instance = None
+        ServerConfig._game_instance = None
+
+    @staticmethod
     def get_database() -> Database:
         if ServerConfig._database_instance is None:
             ServerConfig._database_instance = Database()

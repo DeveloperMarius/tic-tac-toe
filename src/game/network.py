@@ -51,6 +51,7 @@ class NetworkClient:
         ClientConfig.get_eventmanager().clear_events()
         ClientConfig.get_eventmanager().on(EventType.USER_JOIN, lambda event: ClientConfig.get_sessionmanager().add_user(event.data['user']))
         ClientConfig.get_eventmanager().on(EventType.USER_LEAVE, lambda event: ClientConfig.get_sessionmanager().remove_user(event.data['user'].id))
+        ClientConfig.get_eventmanager().on(EventType.USER_UPDATE, lambda event: ClientConfig.get_sessionmanager().update_user(event.data['user']))
         ClientConfig.get_eventmanager().on(EventType.CHAT_MESSAGE, lambda event: ClientConfig.get_sessionmanager().add_chat_messages(event.data['chat_messages']))
         ClientConfig.get_eventmanager().on(EventType.SYNC, lambda event: self._event_sync(event))
 
@@ -106,13 +107,16 @@ class NetworkClient:
 
 class NetworkServer:
 
+    _static_network_server = None
+
+    @staticmethod
+    def get_instance():
+        if NetworkServer._static_network_server is None:
+            NetworkServer._static_network_server = NetworkServer()
+        return NetworkServer._static_network_server
+
     _sio: socketio.AsyncServer
     running: bool = False
-
-    def __new__(cls):
-        if not hasattr(cls, "instance"):
-            cls.instance = super(NetworkServer, cls).__new__(cls)
-        return cls.instance
 
     def __init__(self):
         self._sio = socketio.AsyncServer()
@@ -140,19 +144,17 @@ class NetworkServer:
         site = web.TCPSite(self._runner, 'localhost', 7175)
         await site.start()
         while self.running:
-            await asyncio.sleep(1)
+            await asyncio.sleep(0.1)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.shutdown()
 
-    async def _shutdown(self):
-        print('Stopping server')
+    def shutdown(self):
         self.running = False
         time.sleep(3)
-        await self._runner.cleanup()
-
-    def shutdown(self):
-        asyncio.run(self._shutdown())
+        asyncio.run(self._runner.cleanup())
+        NetworkServer._static_network_server = None
+        ServerConfig.reset()
 
     async def send(self, event: Event, to=None, skip_sid=None):
         await self._sio.emit(event.type.value, json.dumps(event.data, cls=ModelEncoder), to=to, skip_sid=skip_sid)
@@ -225,16 +227,19 @@ class NetworkServer:
                 return
 
             # Check if Lobby has enough users
-            users = ServerConfig.get_sessionmanager().users
-            if len(users) < 2:
+            if len(ServerConfig.get_sessionmanager().users) < 2:
                 return
 
             # Mark User as Ready
             user = ServerConfig.get_sessionmanager().get_user(sid)
-            user.ready = data.ready
+            user.ready = data['ready']
             ServerConfig.get_sessionmanager().update_user(user)
+            await self.send(Event(EventType.USER_UPDATE, {
+                'user': user
+            }))
 
             # Check if every player is ready
+            users = ServerConfig.get_sessionmanager().users
             all_ready = True
             for user_ in users:
                 if not user_.ready:

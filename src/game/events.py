@@ -8,6 +8,8 @@ class EventType(Enum):
     USER_JOIN = 'user_join'
     # Sent to frontend when a user leaves a server
     USER_LEAVE = 'user_leave'
+    # Sent to frontend when a user is updated
+    USER_UPDATE = 'user_update'
     # Sent from server or can be requested from client to update player cache etc.
     SYNC = 'sync'
     # Sent from the frontend when a user clicked the ready button

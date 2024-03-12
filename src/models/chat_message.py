@@ -7,7 +7,7 @@ from src.models.base import Base
 class ChatMessage(Base):
     __tablename__ = "chat_messages"
 
-    id: Mapped[int] = mapped_column(Integer(), primary_key=True)
+    id: Mapped[int] = mapped_column(Integer(), primary_key=True, autoincrement=True)
     from_user: Mapped[int] = mapped_column(Integer(), ForeignKey("users.id"), primary_key=True)
     to_user: Mapped[int] = mapped_column(Integer(), ForeignKey("users.id"), primary_key=True, nullable=True)
     message: Mapped[str] = mapped_column(String(1000))

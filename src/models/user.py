@@ -23,11 +23,12 @@ class LocalUser:
     _admin: bool = False
     _ready: bool = False
 
-    def __init__(self, id: str, username: str, admin: bool = False, db_id: int | None = None):
+    def __init__(self, id: str, username: str, admin: bool = False, db_id: int | None = None, ready: bool = False):
         self._id = id
         self._username = username
         self._admin = admin
         self._db_id = db_id
+        self._ready = ready
 
     @property
     def id(self) -> str:

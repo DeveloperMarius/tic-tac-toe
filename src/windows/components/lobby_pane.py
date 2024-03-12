@@ -31,51 +31,6 @@ class LobbyPane(BaseComponent):
 
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
 
-        self.host_name = "A"
-        self.player_name = ""
-        self.host_ready = True
-        self.player_ready = False
-
-    @property
-    def host_name(self):
-        """Return host name"""
-        return self._host_name
-
-    @host_name.setter
-    def host_name(self, value):
-        """Set host name"""
-        self._host_name = value
-
-    @property
-    def player_name(self):
-        """Return player name"""
-        return self._player_name
-
-    @player_name.setter
-    def player_name(self, value):
-        """Set player name"""
-        self._player_name = value
-
-    @property
-    def host_ready(self):
-        """Return if host is ready"""
-        return self._host_ready
-
-    @host_ready.setter
-    def host_ready(self, value):
-        """Set if host is ready"""
-        self._host_ready = value
-
-    @property
-    def player_ready(self):
-        """Return if player is ready"""
-        return self._player_ready
-
-    @player_ready.setter
-    def player_ready(self, value):
-        """Set if player is ready"""
-        self._player_ready = value
-
     def draw(self):
         """Draw lobby pane component"""
         # Draw Title
@@ -92,7 +47,7 @@ class LobbyPane(BaseComponent):
         )
         pygame.draw.rect(
             self.screen,
-            self.background_ready_color if self.host_ready else self.background_color,
+            self.background_ready_color if len(ClientConfig.get_sessionmanager().users) > 0 and ClientConfig.get_sessionmanager().users[0].ready else self.background_color,
             host_box,
             border_radius=15,
         )
@@ -103,7 +58,7 @@ class LobbyPane(BaseComponent):
         )
         self.screen.blit(host_text, host_text_rect)
         # Draw ready text (if applicable)
-        if self.host_ready:
+        if len(ClientConfig.get_sessionmanager().users) > 0 and ClientConfig.get_sessionmanager().users[0].ready:
             ready_text = self.font.render("Ready", True, (255, 255, 255))
             ready_text_rect = ready_text.get_rect(
                 topright=(self.x + self.width - self.padding, self.y + self.padding)
@@ -119,7 +74,7 @@ class LobbyPane(BaseComponent):
         )
         pygame.draw.rect(
             self.screen,
-            self.background_ready_color if self.player_ready else self.background_color,
+            self.background_ready_color if len(ClientConfig.get_sessionmanager().users) > 1 and ClientConfig.get_sessionmanager().users[1].ready else self.background_color,
             player_box,
             border_radius=15,
         )
@@ -138,7 +93,7 @@ class LobbyPane(BaseComponent):
         )
         self.screen.blit(player_text, player_text_rect)
         # Draw ready text (if applicable)
-        if self.player_ready:
+        if len(ClientConfig.get_sessionmanager().users) > 1 and ClientConfig.get_sessionmanager().users[1].ready:
             ready_text = self.font.render("Ready", True, (255, 255, 255))
             ready_text_rect = ready_text.get_rect(
                 topright=(
