@@ -9,6 +9,15 @@ class ClientConfig:
 
     _eventmanager_instance: EventManager | None = None
     _sessionmanager_instance: Database | None = None
+    _username: str | None = None
+
+    @staticmethod
+    def set_username(username: str):
+        ClientConfig._username = username
+
+    @staticmethod
+    def get_username() -> str:
+        return ClientConfig._username
 
     @staticmethod
     def get_eventmanager() -> EventManager:

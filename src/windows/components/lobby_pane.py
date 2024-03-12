@@ -1,5 +1,6 @@
 import pygame
 from .base_component import BaseComponent
+from ...game.config import ClientConfig
 
 
 class LobbyPane(BaseComponent):
@@ -96,7 +97,7 @@ class LobbyPane(BaseComponent):
             border_radius=15,
         )
         # Draw host text
-        host_text = self.font.render(f"{self.host_name} (HOST)", True, (255, 255, 255))
+        host_text = self.font.render(f"{ClientConfig.get_sessionmanager().users[0].username if len(ClientConfig.get_sessionmanager().users) > 0 else 'Loading...'}", True, (255, 255, 255))
         host_text_rect = host_text.get_rect(
             topleft=(self.x + self.padding, self.y + self.padding)
         )
@@ -124,7 +125,8 @@ class LobbyPane(BaseComponent):
         )
         # Draw player text
         player_text = self.font.render(
-            self.player_name if self.player_name else "Waiting for player to join ...",
+            f'{ClientConfig.get_sessionmanager().users[1].username}' if len(
+                ClientConfig.get_sessionmanager().users) > 1 else 'Waiting for player to join ...',
             True,
             (255, 255, 255),
         )

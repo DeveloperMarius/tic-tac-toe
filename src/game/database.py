@@ -1,7 +1,7 @@
 import subprocess
 import time
 from typing import List
-from src.models.chat_message import ChatMessage
+from src.models.chat_message import ChatMessage, LocalChatMessage
 from src.models.game import Game
 from src.models.game_user import GameUser
 from src.models.user import LocalUser, User
@@ -16,13 +16,21 @@ from sqlalchemy.orm import Mapper
 
 class SessionManager:
     _users: List[LocalUser]
+    _chat_messages: List[LocalChatMessage]
 
     def __init__(self):
         self._users = []
+        self._chat_messages = []
 
     @property
     def users(self) -> List[LocalUser]:
         return self._users
+
+    def get_user_by_username(self, username) -> LocalUser | None:
+        for user in self._users:
+            if user.username == username:
+                return user
+        return None
 
     def add_user(self, user: LocalUser):
         self._users.append(user)
@@ -38,10 +46,7 @@ class SessionManager:
         return None
 
     def exists_with_username(self, username: str) -> bool:
-        for user in self._users:
-            if user.username == username:
-                return True
-        return False
+        return self.get_user_by_username(username) is not None
 
     def exists_with_id(self, id: str) -> bool:
         for user in self._users:
@@ -60,6 +65,20 @@ class SessionManager:
 
     def set_users(self, users: List[LocalUser]):
         self._users = users
+
+    def get_host(self) -> LocalUser:
+        return self._users[0]
+
+    def get_chat_messages(self) -> List[LocalChatMessage]:
+        return self._chat_messages
+
+    def add_chat_messages(self, chat_messages):
+        for chat_message in chat_messages:
+            self._chat_messages.append(chat_message)
+
+    def set_chat_messages(self, chat_messages: List[LocalChatMessage]):
+        self._chat_messages = []
+        self.add_chat_messages(chat_messages)
 
 
 class Database:

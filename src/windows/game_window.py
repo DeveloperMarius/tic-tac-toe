@@ -1,7 +1,7 @@
 from pygame import Surface
 import pygame
 
-from ..game.game import Game
+from ..game.server_game import ServerGame
 
 from .components.tictactoe_field import TicTacToeField
 from .window_manager import Window
@@ -20,7 +20,7 @@ class GameWindow(Window):
         self.x = (width - self.size) / 2
         self.y = (height - self.size) / 2
 
-        self.game = Game()
+        self.game = ServerGame([])
 
         self.tictactoe_field = TicTacToeField(
             self.screen,

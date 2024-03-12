@@ -4,6 +4,8 @@ from .window_manager import Window, WindowManager
 from .components.button import Button
 from .components.chat_pane import ChatPane
 from .components.lobby_pane import LobbyPane
+from ..game.events import Event, EventType
+from ..game.network import NetworkServer, NetworkClient
 
 
 class LobbyWindow(Window):
@@ -60,20 +62,18 @@ class LobbyWindow(Window):
                 case "Ready":
                     if event.type == pygame.MOUSEBUTTONUP:
                         if button.rect.collidepoint(event.pos):
-                            # TODO
-                            # Send a request to the server
-                            # wait for response
-                            # if only one player is ready change lobby pane
-                            # if response is ok, start the game
+                            NetworkClient.get_instance().send(Event(EventType.LOBBY_READY, {
+                                'ready': True
+                            }))
                             print("Starting the game ...")
                 case "Leave":
                     if event.type == pygame.MOUSEBUTTONUP:
                         if button.rect.collidepoint(event.pos):
                             from .main_menu_window import MainMenuWindow
 
+                            NetworkClient.get_instance().disconnect()
+                            if NetworkServer().running:
+                                NetworkServer().shutdown()
                             print("Reloading ...")
-                            # TODO
-                            # Send a leave event to the server
-                            # close the lobby if host
 
                             WindowManager().activeWindow = MainMenuWindow()

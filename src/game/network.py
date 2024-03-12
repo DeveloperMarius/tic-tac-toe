@@ -13,38 +13,58 @@ import asyncio
 
 class NetworkClient:
 
+    _static_network_client = None
+
+    @staticmethod
+    def get_instance():
+        if NetworkClient._static_network_client is None:
+            print('CREATE NEW')
+            NetworkClient._static_network_client = NetworkClient()
+        return NetworkClient._static_network_client
+
     _sio: socketio.Client
     _username: str
 
-    def __init__(self, username):
-        self._sio = socketio.Client()
-        self._username = username
+    #def __new__(cls):
+    #    if not hasattr(cls, "instance"):
+    #        cls.instance = super(NetworkClient, cls).__new__(cls)
+    #    return cls.instance
 
-    def __enter__(self):
-        self.connect()
+    def __init__(self):
+        self._sio = socketio.Client()
+
+    def __enter__(self, username, host):
+        self.connect(username, host)
         return self
 
     @property
     def username(self):
         return self._username
 
-    def connect(self):
+    def connect(self, username, host, port=7175):
+        self._username = username
         self.call_backs()
         self._register_default_events()
-        self._sio.connect('http://localhost:5000', {
+        self._sio.connect(f'http://{host}:{port}', {
             'username': self.username
         }, 'authtoken')
         self.send(Event(EventType.SYNC))
+
+    def disconnect(self):
+        self._sio.disconnect()
 
     def _register_default_events(self):
         ClientConfig.get_eventmanager().clear_events()
         ClientConfig.get_eventmanager().on(EventType.USER_JOIN, lambda event: ClientConfig.get_sessionmanager().add_user(event.data['user']))
         ClientConfig.get_eventmanager().on(EventType.USER_LEAVE, lambda event: ClientConfig.get_sessionmanager().remove_user(event.data['user'].id))
+        ClientConfig.get_eventmanager().on(EventType.CHAT_MESSAGE, lambda event: ClientConfig.get_sessionmanager().add_chat_messages(event.data['chat_messages']))
         ClientConfig.get_eventmanager().on(EventType.SYNC, lambda event: self._event_sync(event))
 
     def _event_sync(self, event):
         users = [LocalUser(**user) for user in event.data['users']]
         ClientConfig.get_sessionmanager().set_users(users)
+        chat_messages = [LocalChatMessage(**chat_message) for chat_message in event.data['chat_messages']]
+        ClientConfig.get_sessionmanager().set_chat_messages(chat_messages)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._sio.disconnect()
@@ -84,6 +104,11 @@ class NetworkServer:
     _sio: socketio.AsyncServer
     running: bool = False
 
+    def __new__(cls):
+        if not hasattr(cls, "instance"):
+            cls.instance = super(NetworkServer, cls).__new__(cls)
+        return cls.instance
+
     def __init__(self):
         self._sio = socketio.AsyncServer()
         self.call_backs()
@@ -91,7 +116,6 @@ class NetworkServer:
         self._sio.attach(self._app)
         self._runner = web.AppRunner(self._app)
         self._thread = Thread(target=self._start_server)
-        self.running = True
 
     def __enter__(self):
         self.start_server()
@@ -106,8 +130,9 @@ class NetworkServer:
 
     async def _start_server2(self):
         print('Starting server')
+        self.running = True
         await self._runner.setup()
-        site = web.TCPSite(self._runner, 'localhost', 5000)
+        site = web.TCPSite(self._runner, 'localhost', 7175)
         await site.start()
         while self.running:
             await asyncio.sleep(1)
@@ -123,7 +148,6 @@ class NetworkServer:
 
     def shutdown(self):
         asyncio.run(self._shutdown())
-        self._thread.join()
 
     async def send(self, event: Event, to=None, skip_sid=None):
         await self._sio.emit(event.type.value, json.dumps(event.data, cls=ModelEncoder), to=to, skip_sid=skip_sid)
