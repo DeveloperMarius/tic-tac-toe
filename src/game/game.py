@@ -2,7 +2,7 @@ import random
 
 from ..models.ai_player import DummyAIPlayer
 
-# from ..models.ai_player import SmartAIPlayer
+from ..models.ai_player import SmartAIPlayer
 from ..models.player import Player
 from ..windows.components.tictactoe_field import FieldRect
 
@@ -17,7 +17,7 @@ class Game:
         # randomly chosses the order of the players ([1, 2] or [2, 1])
         self.players = random.sample([1, 2], 2)
         self.player_1 = Player("Player 1", self.players[0])
-        self.player_2 = DummyAIPlayer("Player 2", self.players[1])
+        self.player_2 = SmartAIPlayer("Player 2", self.players[1])
         self.board = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
         # set the player who starts
         if self.player_1.symbol == 1:
@@ -35,7 +35,7 @@ class Game:
         # Update the field
         fields[index].checked = self.current_player.symbol
         print("Index: " + str(index) + " Symbol: " + str(self.current_player.symbol))
-        print((index // 3), (index % 3))
+        print("Board: ", (index // 3), (index % 3))
         self.board[index // 3][index % 3] = self.current_player.symbol
         print(
             "Player "
@@ -52,9 +52,9 @@ class Game:
         self.check_winner()
 
         # let ai player make a move
-        if isinstance(self.current_player, DummyAIPlayer) and self.winner == 0:
+        if isinstance(self.current_player, SmartAIPlayer) and self.winner == 0:
             print("AI is making a move")
-            index = self.current_player.make_random_move(self)
+            index = self.current_player.make_move(self)
             fields = self.handle_turn(index, fields)
 
         return fields
@@ -87,16 +87,22 @@ class Game:
 
         if self.hoizontal_win():
             self.winner = self.current_player
+            self.player_1.winner_symbol = self.current_player.symbol
+            self.player_2.winner_symbol = self.current_player.symbol
             print("Player " + self.winner.name + " has won with horizontal position")
             return True
 
         if self.vertical_win():
             self.winner = self.current_player
+            self.player_1.winner_symbol = self.current_player.symbol
+            self.player_2.winner_symbol = self.current_player.symbol
             print("Player " + self.winner.name + " has won with vertical position")
             return True
 
         if self.diagonal_win():
             self.winner = self.current_player
+            self.player_1.winner_symbol = self.current_player.symbol
+            self.player_2.winner_symbol = self.current_player.symbol
             print("Player " + self.winner.name + " has won with diagonal position")
             return True
 
@@ -114,7 +120,7 @@ class Game:
             self.player_1.isMyTurn = True
 
     def handle_ai_first(self, fields: list[FieldRect]):
-        if isinstance(self.current_player, DummyAIPlayer):
+        if isinstance(self.current_player, SmartAIPlayer):
             index = self.current_player.make_random_move(self)
             fields = self.handle_turn(index, fields)
         return fields
