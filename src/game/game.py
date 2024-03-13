@@ -87,22 +87,16 @@ class Game:
 
         if self.hoizontal_win():
             self.winner = self.current_player
-            self.player_1.winner_symbol = self.current_player.symbol
-            self.player_2.winner_symbol = self.current_player.symbol
             print("Player " + self.winner.name + " has won with horizontal position")
             return True
 
         if self.vertical_win():
             self.winner = self.current_player
-            self.player_1.winner_symbol = self.current_player.symbol
-            self.player_2.winner_symbol = self.current_player.symbol
             print("Player " + self.winner.name + " has won with vertical position")
             return True
 
         if self.diagonal_win():
             self.winner = self.current_player
-            self.player_1.winner_symbol = self.current_player.symbol
-            self.player_2.winner_symbol = self.current_player.symbol
             print("Player " + self.winner.name + " has won with diagonal position")
             return True
 
@@ -124,3 +118,9 @@ class Game:
             index = self.current_player.make_random_move(self)
             fields = self.handle_turn(index, fields)
         return fields
+
+    def check_theoretical_winner(self) -> int:
+        if self.hoizontal_win() or self.vertical_win() or self.diagonal_win():
+            return self.current_player.symbol
+        else:
+            return 0

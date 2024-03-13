@@ -29,7 +29,6 @@ class SmartAIPlayer:
         self.name = name
         self.symbol = symbol  # 1 = X, 2 = O
         self.opponent_symbol = 2 if symbol == 1 else 1
-        self.winner_symbol = 0
 
     def find_best_move(self, game):
         best_score = -float("inf")
@@ -46,9 +45,11 @@ class SmartAIPlayer:
         return best_move[0] * 3 + best_move[1]  # Convert row, col to index
 
     def minimax(self, game, depth, isMaximizing):
-        if self.winner_symbol == self.symbol:
+        winner = game.check_theoretical_winner()
+        print("TheorieWinner: ", winner)
+        if winner == self.symbol:
             return 1
-        if self.winner_symbol == self.opponent_symbol:
+        if winner == self.opponent_symbol:
             return -1
         elif all(
             game.board[row][col] != 0 for row in range(3) for col in range(3)
