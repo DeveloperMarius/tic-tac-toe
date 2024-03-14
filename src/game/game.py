@@ -100,6 +100,11 @@ class Game:
             print("Player " + self.winner.name + " has won with diagonal position")
             return True
 
+        # check if board is full
+        if all(self.board[row][col] != 0 for row in range(3) for col in range(3)):
+            print("The game ended in a draw")
+            return True
+
         return False
 
     # Switches the player and set the isMyTurn attribute
