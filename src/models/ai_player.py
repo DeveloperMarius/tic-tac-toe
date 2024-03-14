@@ -86,47 +86,20 @@ class SmartAIPlayer:
         return index
 
     def check_theoretical_winner(self, game):
-        # check for rows
-        for row in game.board:
-            if row[0] == row[1] == row[2] == self.symbol:
-                return 1
-            elif row[0] == row[1] == row[2] == self.opponent_symbol:
-                return -1
-        # check for columns
-        for col in range(3):
-            if (
-                game.board[0][col]
-                == game.board[1][col]
-                == game.board[2][col]
-                == self.symbol
-            ):
-                return 1
-            elif (
-                game.board[0][col]
-                == game.board[1][col]
-                == game.board[2][col]
-                == self.opponent_symbol
-            ):
-                return -1
+
+        for i in range(3):
+            # check for rows
+            if game.board[i][0] == game.board[i][1] == game.board[i][2] != 0:
+                return game.board[i][0]
+            # check for colums
+            if game.board[0][i] == game.board[1][i] == game.board[2][i] != 0:
+                return game.board[0][i]
         # check for diagonals
-        if game.board[0][0] == game.board[1][1] == game.board[2][2] == self.symbol:
-            return 1
-        elif (
-            game.board[0][0]
-            == game.board[1][1]
-            == game.board[2][2]
-            == self.opponent_symbol
+        if (
+            game.board[0][0] == game.board[1][1] == game.board[2][2] != 0
+            or game.board[0][2] == game.board[1][1] == game.board[2][0] != 0
         ):
-            return -1
-        elif game.board[0][2] == game.board[1][1] == game.board[2][0] == self.symbol:
-            return 1
-        elif (
-            game.board[0][2]
-            == game.board[1][1]
-            == game.board[2][0]
-            == self.opponent_symbol
-        ):
-            return -1
+            return game.board[1][1]
         return 0
 
     def make_random_move(self, game):

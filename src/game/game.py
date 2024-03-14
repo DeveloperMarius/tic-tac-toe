@@ -115,13 +115,7 @@ class Game:
 
     def handle_ai_first(self, fields: list[FieldRect]):
         if isinstance(self.current_player, SmartAIPlayer):
-            index = self.current_player.make_random_move(self)
+            index = self.current_player.make_move(self)
             print("AI is making a first move - is random")
             fields = self.handle_turn(index, fields)
         return fields
-
-    def check_theoretical_winner(self) -> int:
-        if self.hoizontal_win() or self.vertical_win() or self.diagonal_win():
-            return self.current_player.symbol
-        else:
-            return 0
