@@ -63,9 +63,19 @@ class LobbyWindow(Window):
                 case "Ready":
                     if event.type == pygame.MOUSEBUTTONUP:
                         if button.rect.collidepoint(event.pos):
-                            NetworkClient.get_instance().send(Event(EventType.LOBBY_READY, {
-                                'ready': not ClientConfig.get_sessionmanager().get_user_by_username(ClientConfig.get_username()).ready
-                            }))
+                            NetworkClient.get_instance().send(
+                                Event(
+                                    EventType.LOBBY_READY,
+                                    {
+                                        "ready": not ClientConfig.get_sessionmanager()
+                                        .get_user_by_username(
+                                            ClientConfig.get_username()
+                                        )
+                                        .ready
+                                    },
+                                )
+                            )
+
                 case "Leave":
                     if event.type == pygame.MOUSEBUTTONUP:
                         if button.rect.collidepoint(event.pos):
