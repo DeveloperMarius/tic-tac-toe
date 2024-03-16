@@ -69,7 +69,7 @@ class PlayOnlineWindow(Window):
                     NetworkClient.get_instance().connect(ClientConfig.get_username(), self.menu_input.text)
                     # todo start game window
                     from .lobby_window import LobbyWindow
-                    WindowManager().activeWindow = LobbyWindow()
+                    WindowManager.get_instance().activeWindow = LobbyWindow()
                 elif button.text == "Host":
 
                     NetworkServer.get_instance().start_server()
@@ -79,11 +79,11 @@ class PlayOnlineWindow(Window):
 
                     from .lobby_window import LobbyWindow
 
-                    WindowManager().activeWindow = LobbyWindow()
+                    WindowManager.get_instance().activeWindow = LobbyWindow()
                 elif button.text == "Back":
                     from .main_menu_window import MainMenuWindow
 
-                    WindowManager().activeWindow = MainMenuWindow()
+                    WindowManager.get_instance().activeWindow = MainMenuWindow()
 
     def draw(self, screen):
         for item in self.menu_items:

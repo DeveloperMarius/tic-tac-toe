@@ -54,7 +54,7 @@ class OptionsWindow(Window):
             elif button.text == "Back":
                 from .main_menu_window import MainMenuWindow
 
-                WindowManager().activeWindow = MainMenuWindow()
+                WindowManager.get_instance().activeWindow = MainMenuWindow()
 
     def draw(self, screen):
         for button in self.menu_buttons:

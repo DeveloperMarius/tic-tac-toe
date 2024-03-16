@@ -2,10 +2,14 @@ import pygame
 
 
 class WindowManager:
-    def __new__(cls):
-        if not hasattr(cls, "instance"):
-            cls.instance = super(WindowManager, cls).__new__(cls)
-        return cls.instance
+
+    _static_window_manager = None
+
+    @staticmethod
+    def get_instance():
+        if WindowManager._static_window_manager is None:
+            WindowManager._static_window_manager = WindowManager()
+        return WindowManager._static_window_manager
 
     def __init__(self):
         self._activeWindow: Window = None

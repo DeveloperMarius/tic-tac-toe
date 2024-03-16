@@ -46,22 +46,31 @@ class ServerGame:
     def players(self) -> list[str]:
         return self._players
 
-    def hoizontal_win(self):
+    def horizontal_win(self):
         for row in self.board:
-            symbol = row[0]
-            if row == [symbol, symbol, symbol]:
+            if row == [self.current_player, self.current_player, self.current_player]:
                 return True
 
         return False
 
     def vertical_win(self):
-        list(zip(self.board[::-1]))
+        for x in range(3):
+            if self.board[0][x] == self.current_player and self.board[1][x] == self.current_player and self.board[2][x] == self.current_player:
+                return True
+
+        return False
 
     def diagonal_win(self):
-        pass
+        if self.board[0][0] == self.current_player and self.board[1][1] == self.current_player and self.board[2][2] == self.current_player:
+            return True
+
+        if self.board[0][2] == self.current_player and self.board[1][1] == self.current_player and self.board[2][0] == self.current_player:
+            return True
+
+        return False
 
     def check_winner(self) -> bool:
-        if self.hoizontal_win():
+        if self.horizontal_win():
             return True
 
         if self.vertical_win():
@@ -71,3 +80,14 @@ class ServerGame:
             return True
 
         return False
+
+    def is_draw(self) -> bool:
+        for row in self.board:
+            for field in row:
+                if field is None:
+                    return False
+
+        return True
+
+    def check_game_over(self) -> bool:
+        return self.check_winner() or self.is_draw()

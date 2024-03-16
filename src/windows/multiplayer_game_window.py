@@ -3,7 +3,9 @@ import pygame
 
 from .window_manager import Window
 from .components.chat_pane import ChatPane
-from .components.tictactoe_field import TicTacToeField
+from .components.tictactoe_field import TicTacToeField, FieldRect
+from ..game.events import Event, EventType
+from ..game.network import NetworkClient
 
 
 class MultiplayerGameWindow(Window):
@@ -18,9 +20,12 @@ class MultiplayerGameWindow(Window):
         # self.server_game = ServerGame(self.player_ids)
 
         # TODO: Delete this and replace with clientGameTurnHandle
-        def handle_tictactoefield():
-            print("Click")
-            return self.tictactoe_field.field_rects
+        def handle_tictactoefield(index: int, fields: list[FieldRect]):
+            NetworkClient.get_instance().send(Event(EventType.GAMEPLAY_MOVE_RESPONSE, {
+                'x': index % 3,
+                'y': index // 3
+            }))
+            return fields
 
         self.tictactoe_field = TicTacToeField(
             self.screen,
@@ -28,7 +33,7 @@ class MultiplayerGameWindow(Window):
             0 + self.height * 0.1,
             self.height * 0.8,
             self.height * 0.8,
-            handle_tictactoefield,  # TODO: CHANGEME
+            handle_tictactoefield,
         )
         self.chat_pane = ChatPane(
             self.screen,

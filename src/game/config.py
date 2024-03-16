@@ -3,6 +3,7 @@ from typing import List
 from src.game.database import Database, SessionManager
 from src.game.events import EventManager
 from src.game.server_game import ServerGame
+from src.models.user import LocalUser
 
 
 class ClientConfig:
@@ -18,6 +19,10 @@ class ClientConfig:
     @staticmethod
     def get_username() -> str:
         return ClientConfig._username
+
+    @staticmethod
+    def get_user() -> LocalUser | None:
+        return ClientConfig.get_sessionmanager().get_user_by_username(ClientConfig.get_username())
 
     @staticmethod
     def get_eventmanager() -> EventManager:

@@ -39,7 +39,7 @@ class Event:
 
     def __init__(self, type: EventType, data: any = None):
         self._type = type
-        self._data = data
+        self._data = data if data is not None else {}
 
     @property
     def type(self):

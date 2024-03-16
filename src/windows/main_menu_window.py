@@ -50,17 +50,17 @@ class MainMenuWindow(Window):
             if button.text == "Play Online":
                 from .play_online_window import PlayOnlineWindow
 
-                WindowManager().activeWindow = PlayOnlineWindow()
+                WindowManager.get_instance().activeWindow = PlayOnlineWindow()
 
             elif button.text == "Play Offline":
                 from .game_window import GameWindow
 
-                WindowManager().activeWindow = GameWindow()
+                WindowManager.get_instance().activeWindow = GameWindow()
 
             elif button.text == "Options":
                 from .options_window import OptionsWindow
 
-                WindowManager().activeWindow = OptionsWindow()
+                WindowManager.get_instance().activeWindow = OptionsWindow()
             elif button.text == "Exit":
                 pygame.quit()
 

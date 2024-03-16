@@ -86,4 +86,4 @@ class LobbyWindow(Window):
                                 NetworkServer.get_instance().shutdown()
                             print("Reloading ...")
 
-                            WindowManager().activeWindow = MainMenuWindow()
+                            WindowManager.get_instance().activeWindow = MainMenuWindow()

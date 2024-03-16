@@ -184,11 +184,12 @@ class Database:
                     if _local_user.id == player:
                         local_user = _local_user
                         break
-                db_game_user = GameUser(game=db_game.id, user=local_user.db_id, won=False)
+                db_game_user = GameUser(game=db_game.id, user=local_user.db_id, result=None)
                 session.add(db_game_user)
+            game._db_id = db_game.id
         return game
 
-    def game_over(self, game: LocalGame, winner: LocalUser):
+    def game_over(self, game: LocalGame, user: LocalUser, result: int):
         with Session(self.engine, expire_on_commit=False) as session:
             # Update the game
             statement = update(Game).where(
@@ -200,9 +201,9 @@ class Database:
             # Update the winner
             statement2 = update(GameUser).where(
                 GameUser.game == game.db_id and
-                GameUser.user == winner.db_id
+                GameUser.user == user.db_id
             ).values({
-                'won': True
+                'result': result
             })
             session.execute(statement2)
         return
