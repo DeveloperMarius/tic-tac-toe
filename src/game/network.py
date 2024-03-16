@@ -83,10 +83,16 @@ class NetworkClient:
             EventType.GAMEPLAY_START, lambda event: self._gameplay_start(event)
         )
         ClientConfig.get_eventmanager().on(
+            # TODO Implement success message
             EventType.GAMEPLAY_MOVE_ACCEPTED, lambda event: print('Move accepted')
         )
         ClientConfig.get_eventmanager().on(
+            # TODO Implement error message
             EventType.GAMEPLAY_MOVE_DENIED, lambda event: print('Move denied')
+        )
+        ClientConfig.get_eventmanager().on(
+            # TODO Implement finish message / back to menu
+            EventType.GAMEPLAY_STOP, lambda event: print('Move denied')
         )
         ClientConfig.get_eventmanager().on(
             EventType.GAMEPLAY_MOVE_ACCEPTED, lambda event: self._gameplay_move_accepted(event)

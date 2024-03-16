@@ -80,6 +80,7 @@ class OptionsWindow(Window):
                 continue
             elif button.text == "Save":
                 ClientConfig.set_username(self.username_input.text)
+                # Implement success message
             elif button.text == "Back":
                 from .main_menu_window import MainMenuWindow
 
