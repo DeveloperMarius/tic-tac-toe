@@ -67,11 +67,7 @@ class LobbyWindow(Window):
                                 Event(
                                     EventType.LOBBY_READY,
                                     {
-                                        "ready": not ClientConfig.get_sessionmanager()
-                                        .get_user_by_username(
-                                            ClientConfig.get_username()
-                                        )
-                                        .ready
+                                        "ready": not ClientConfig.get_user().ready
                                     },
                                 )
                             )

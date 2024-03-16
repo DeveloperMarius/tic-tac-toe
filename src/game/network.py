@@ -351,6 +351,14 @@ class NetworkServer:
                 )
 
         @self._sio.event
+        async def user_update_username(sid, data):
+            user = ServerConfig.get_sessionmanager().get_user(sid)
+            user.username = data['username']
+            ServerConfig.get_sessionmanager().update_user(user)
+            ServerConfig.get_database().update_username(user)
+            await self.send(Event(EventType.USER_UPDATE, {"user": user}))
+
+        @self._sio.event
         async def chat_message(sid, data):
             _chat_message = LocalChatMessage(
                 from_user=sid,
@@ -477,7 +485,6 @@ class NetworkServer:
             await self.send(Event(EventType.USER_LEAVE, {"user": user}), skip_sid=sid)
 
             # Save and Remove user from local user cache
-            ServerConfig.get_database().save_user(user)
             ServerConfig.get_sessionmanager().remove_user(sid)
 
             return True

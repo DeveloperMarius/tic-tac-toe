@@ -135,8 +135,10 @@ class Database:
             users = response.fetchall()
         return list(users)
 
-    def save_user(self, user: LocalUser):
-        # update(User).where(User.username == user.username).values()
+    def update_username(self, user: LocalUser):
+        update(User).where(User.id == user.db_id).values({
+            'username': user.username
+        })
         pass
 
     def chat_message(self, chat_message: ChatMessage) -> ChatMessage:

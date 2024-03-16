@@ -131,7 +131,7 @@ class ChatPane(BaseComponent):
             NetworkClient.get_instance().send(Event(EventType.CHAT_MESSAGE, {
                 'chat_message': {
                     'to_user': None,
-                    'from_user': ClientConfig.get_sessionmanager().get_user_by_username(ClientConfig.get_username()).id,
+                    'from_user': ClientConfig.get_user().id,
                     'message': text
                 }
             }))

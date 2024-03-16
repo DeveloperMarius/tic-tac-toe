@@ -65,16 +65,12 @@ class PlayOnlineWindow(Window):
                     # todo check if valid ip
                     if self.menu_input.text == "Enter IP Address":
                         return
-                    ClientConfig.set_username("USERNAME2")
                     NetworkClient.get_instance().connect(ClientConfig.get_username(), self.menu_input.text)
-                    # todo start game window
                     from .lobby_window import LobbyWindow
                     WindowManager.get_instance().activeWindow = LobbyWindow()
                 elif button.text == "Host":
 
                     NetworkServer.get_instance().start_server()
-                    # TODO SET USERNAME
-                    ClientConfig.set_username("USERNAME")
                     NetworkClient.get_instance().connect(ClientConfig.get_username(), '127.0.0.1')
 
                     from .lobby_window import LobbyWindow
