@@ -5,6 +5,7 @@ class ServerGame:
 
     _db_id: int | None
     _current_player: str | None = None
+    _finished: bool = False
 
     def __init__(self, player_ids) -> None:
         # None = Nothing
@@ -45,6 +46,14 @@ class ServerGame:
     @property
     def players(self) -> list[str]:
         return self._players
+
+    @property
+    def finished(self) -> bool:
+        return self._finished
+
+    @finished.setter
+    def finished(self, value: bool) -> None:
+        self._finished = value
 
     def horizontal_win(self):
         for row in self.board:

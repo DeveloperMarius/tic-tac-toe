@@ -12,6 +12,9 @@ class ClientConfig:
     _sessionmanager_instance: Database | None = None
     _username: str | None = None
 
+    # {'wins': wins, 'losses': losses, 'draws': draws}
+    _statistics: dict | None = None
+
     @staticmethod
     def set_username(username: str):
         ClientConfig._username = username
@@ -19,6 +22,14 @@ class ClientConfig:
     @staticmethod
     def get_username() -> str:
         return ClientConfig._username
+
+    @staticmethod
+    def set_statistics(statistics: dict):
+        ClientConfig._statistics = statistics
+
+    @staticmethod
+    def get_statistics() -> dict:
+        return ClientConfig._statistics
 
     @staticmethod
     def get_user() -> LocalUser | None:

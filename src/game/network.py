@@ -92,7 +92,7 @@ class NetworkClient:
         )
         ClientConfig.get_eventmanager().on(
             # TODO Implement finish message / back to menu
-            EventType.GAMEPLAY_STOP, lambda event: print('Move denied')
+            EventType.GAMEPLAY_STOP, lambda event: self._gameplay_stop(event)
         )
         ClientConfig.get_eventmanager().on(
             EventType.GAMEPLAY_MOVE_ACCEPTED, lambda event: self._gameplay_move_accepted(event)
@@ -101,11 +101,25 @@ class NetworkClient:
     def _event_sync(self, event):
         ClientConfig.get_sessionmanager().set_users(event.data["users"])
         ClientConfig.get_sessionmanager().set_chat_messages(event.data["chat_messages"])
+        ClientConfig.set_statistics(event.data["statistics"])
 
     def _gameplay_start(self, event):
         from ..windows.multiplayer_game_window import MultiplayerGameWindow
 
         WindowManager.get_instance().activeWindow = MultiplayerGameWindow()
+
+    def _gameplay_stop(self, event):
+        print('Game over')
+        if ClientConfig.get_user().id in event.data['winners']:
+            if len(event.data['winners']) == 1:
+                statistics = ClientConfig.get_statistics()
+                statistics['wins'] += 1
+                ClientConfig.set_statistics(statistics)
+            else:
+                statistics = ClientConfig.get_statistics()
+                statistics['draws'] += 1
+                ClientConfig.set_statistics(statistics)
+
 
     def _gameplay_move_accepted(self, event):
         fields = WindowManager.get_instance().activeWindow.tictactoe_field.field_rects
@@ -286,7 +300,6 @@ class NetworkServer:
 
         @self._sio.event
         async def sync(sid, data):
-            print("message ", sid)
             chat_messages = []
             for _chat_message in ServerConfig.get_database().get_chat_messages_global():
                 chat_messages.append(
@@ -307,7 +320,8 @@ class NetworkServer:
                     {
                         "users": ServerConfig.get_sessionmanager().users,
                         "chat_messages": chat_messages,
-                    },
+                        "statistics": ServerConfig.get_database().get_statistics(ServerConfig.get_sessionmanager().get_user(sid).db_id)
+                    }
                 ),
                 to=sid,
             )
@@ -410,6 +424,11 @@ class NetworkServer:
                 return
             game = ServerConfig.get_game()
 
+            # Check if game is already finished
+            if game.finished:
+                print('GAME IS ALREADY FINISHED')
+                return
+
             # Check if user is allowed to move
             if sid != game.current_player:
                 await self.send(
@@ -439,35 +458,40 @@ class NetworkServer:
             )
 
             if game.is_draw():
-                await self.send(Event(EventType.GAMEPLAY_STOP, {
-                    'result': 0
-                }))
+                game.finished = True
+                ServerConfig.get_database().game_over(
+                    game
+                )
                 for player in game.players:
-                    ServerConfig.get_database().game_over(
+                    ServerConfig.get_database().game_over_update_user(
                         game,
                         ServerConfig.get_sessionmanager().get_user(player),
                         0
                     )
                 await self.send(
-                    Event(EventType.GAMEPLAY_WINNER, {"winners": game.players})
+                    Event(EventType.GAMEPLAY_STOP, {"winners": game.players})
                 )
                 return
             if game.check_winner():
+                game.finished = True
+                ServerConfig.get_database().game_over(
+                    game
+                )
                 for player in game.players:
                     if player == game.current_player:
                         continue
-                    ServerConfig.get_database().game_over(
+                    ServerConfig.get_database().game_over_update_user(
                         game,
                         ServerConfig.get_sessionmanager().get_user(player),
                         1
                     )
-                ServerConfig.get_database().game_over(
+                ServerConfig.get_database().game_over_update_user(
                     game,
                     ServerConfig.get_sessionmanager().get_user(game.current_player),
                     2
                 )
                 await self.send(
-                    Event(EventType.GAMEPLAY_WINNER, {"winners": [
+                    Event(EventType.GAMEPLAY_STOP, {"winners": [
                         game.current_player
                     ]})
                 )

@@ -28,8 +28,6 @@ class EventType(Enum):
     GAMEPLAY_MOVE_DENIED = 'gameplay_move_denied'
     # Remove the play field because the game is over
     GAMEPLAY_STOP = 'gameplay_stop'
-    # Sent from the server when a player has won
-    GAMEPLAY_WINNER = 'gameplay_winner'
     # Send / receive a message
     CHAT_MESSAGE = 'chat_message'
 

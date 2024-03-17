@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import String
 from sqlalchemy.event import listens_for
 from sqlalchemy.orm import Mapper
+from sqlalchemy import and_, or_
 
 
 class SessionManager:
@@ -147,12 +148,34 @@ class Database:
             session.commit()
         return chat_message
 
+    def get_statistics(self, user: int) -> dict:
+        with Session(self.engine, expire_on_commit=False) as session:
+            statement = select(GameUser).where(GameUser.user == user)
+            response = session.scalars(statement)
+            statistics = response.fetchall()
+        wins = 0
+        losses = 0
+        draws = 0
+        for statistic in list(statistics):
+            if statistic.result == 0:
+                draws += 1
+            elif statistic.result == 1:
+                losses += 1
+            elif statistic.result == 2:
+                wins += 1
+        return {
+            'wins': wins,
+            'losses': losses,
+            'draws': draws
+        }
+
     def get_chat_messages_private(self, user1: int, user2: int) -> List[ChatMessage]:
         with Session(self.engine, expire_on_commit=False) as session:
             statement = select(ChatMessage).where(
-                (ChatMessage.to_user == user1 and ChatMessage.from_user == user2)
-                or
-                (ChatMessage.to_user == user2 and ChatMessage.from_user == user1)
+                or_(
+                    and_(ChatMessage.to_user == user1, ChatMessage.from_user == user2),
+                    and_(ChatMessage.to_user == user2, ChatMessage.from_user == user1)
+                )
             )
             response = session.scalars(statement)
             chat_messages = response.fetchall()
@@ -188,10 +211,11 @@ class Database:
                         break
                 db_game_user = GameUser(game=db_game.id, user=local_user.db_id, result=None)
                 session.add(db_game_user)
+            session.commit()
             game._db_id = db_game.id
         return game
 
-    def game_over(self, game: LocalGame, user: LocalUser, result: int):
+    def game_over(self, game: LocalGame):
         with Session(self.engine, expire_on_commit=False) as session:
             # Update the game
             statement = update(Game).where(
@@ -200,14 +224,17 @@ class Database:
                 'finished': round(time.time()*1000)
             })
             session.execute(statement)
+            session.commit()
+        return
+
+    def game_over_update_user(self, game: LocalGame, user: LocalUser, result: int):
+        with Session(self.engine, expire_on_commit=False) as session:
             # Update the winner
-            statement2 = update(GameUser).where(
-                GameUser.game == game.db_id and
-                GameUser.user == user.db_id
-            ).values({
+            statement = update(GameUser).where(GameUser.game == game.db_id, GameUser.user == user.db_id).values({
                 'result': result
             })
-            session.execute(statement2)
+            session.execute(statement)
+            session.commit()
         return
 
 
