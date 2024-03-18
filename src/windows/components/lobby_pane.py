@@ -1,6 +1,6 @@
 import pygame
 from .base_component import BaseComponent
-from ...game.config import ClientConfig
+from ...game.config import Clients
 
 
 class LobbyPane(BaseComponent):
@@ -47,18 +47,18 @@ class LobbyPane(BaseComponent):
         )
         pygame.draw.rect(
             self.screen,
-            self.background_ready_color if len(ClientConfig.get_sessionmanager().users) > 0 and ClientConfig.get_sessionmanager().users[0].ready else self.background_color,
+            self.background_ready_color if len(Clients.first().get_sessionmanager().users) > 0 and Clients.first().get_sessionmanager().users[0].ready else self.background_color,
             host_box,
             border_radius=15,
         )
         # Draw host text
-        host_text = self.font.render(f"{ClientConfig.get_sessionmanager().users[0].username if len(ClientConfig.get_sessionmanager().users) > 0 else 'Loading...'}", True, (255, 255, 255))
+        host_text = self.font.render(f"{Clients.first().get_sessionmanager().users[0].username if len(Clients.first().get_sessionmanager().users) > 0 else 'Loading...'}", True, (255, 255, 255))
         host_text_rect = host_text.get_rect(
             topleft=(self.x + self.padding, self.y + self.padding)
         )
         self.screen.blit(host_text, host_text_rect)
         # Draw ready text (if applicable)
-        if len(ClientConfig.get_sessionmanager().users) > 0 and ClientConfig.get_sessionmanager().users[0].ready:
+        if len(Clients.first().get_sessionmanager().users) > 0 and Clients.first().get_sessionmanager().users[0].ready:
             ready_text = self.font.render("Ready", True, (255, 255, 255))
             ready_text_rect = ready_text.get_rect(
                 topright=(self.x + self.width - self.padding, self.y + self.padding)
@@ -74,14 +74,14 @@ class LobbyPane(BaseComponent):
         )
         pygame.draw.rect(
             self.screen,
-            self.background_ready_color if len(ClientConfig.get_sessionmanager().users) > 1 and ClientConfig.get_sessionmanager().users[1].ready else self.background_color,
+            self.background_ready_color if len(Clients.first().get_sessionmanager().users) > 1 and Clients.first().get_sessionmanager().users[1].ready else self.background_color,
             player_box,
             border_radius=15,
         )
         # Draw player text
         player_text = self.font.render(
-            f'{ClientConfig.get_sessionmanager().users[1].username}' if len(
-                ClientConfig.get_sessionmanager().users) > 1 else 'Waiting for player to join ...',
+            f'{Clients.first().get_sessionmanager().users[1].username}' if len(
+                Clients.first().get_sessionmanager().users) > 1 else 'Waiting for player to join ...',
             True,
             (255, 255, 255),
         )
@@ -93,7 +93,7 @@ class LobbyPane(BaseComponent):
         )
         self.screen.blit(player_text, player_text_rect)
         # Draw ready text (if applicable)
-        if len(ClientConfig.get_sessionmanager().users) > 1 and ClientConfig.get_sessionmanager().users[1].ready:
+        if len(Clients.first().get_sessionmanager().users) > 1 and Clients.first().get_sessionmanager().users[1].ready:
             ready_text = self.font.render("Ready", True, (255, 255, 255))
             ready_text_rect = ready_text.get_rect(
                 topright=(

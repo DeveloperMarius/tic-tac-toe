@@ -12,7 +12,7 @@ class MultiplayerGameWindow(Window):
     def __init__(self):
         super().__init__()
 
-        # self.player_ids = [user._id for user in ClientConfig.get_sessionmanager().users]
+        # self.player_ids = [user._id for user in Clients.first().get_sessionmanager().users]
 
         # TODO:
         # - Create ClientGame
@@ -21,7 +21,7 @@ class MultiplayerGameWindow(Window):
 
         # TODO: Delete this and replace with clientGameTurnHandle
         def handle_tictactoefield(index: int, fields: list[FieldRect]):
-            NetworkClient.get_instance().send(Event(EventType.GAMEPLAY_MOVE_RESPONSE, {
+            NetworkClient.first().send(Event(EventType.GAMEPLAY_MOVE_RESPONSE, {
                 'x': index % 3,
                 'y': index // 3
             }))

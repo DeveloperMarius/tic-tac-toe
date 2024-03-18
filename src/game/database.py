@@ -38,7 +38,8 @@ class SessionManager:
 
     def update_user(self, user: LocalUser):
         index = next((index for (index, _user) in enumerate(self._users) if _user.id == user.id), None)
-        self._users[index] = user
+        if index is not None:
+            self._users[index] = user
 
     def get_user(self, id: str) -> LocalUser | None:
         for user in self._users:
