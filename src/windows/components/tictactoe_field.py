@@ -121,8 +121,14 @@ class TicTacToeField(BaseComponent):
                 print("Field already checked")
                 break
 
+            handle_turn_result = self.handle_turn(i, self.field_rects)
             # Return the index of the field and the rects to let the game handle the turn
-            self.field_rects = self.handle_turn(i, self.field_rects)
+            if not handle_turn_result:
+                print("Game Over")
+                return
+
+            self.field_rects = handle_turn_result
+
             break
 
     def draw(self):
