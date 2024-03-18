@@ -83,29 +83,29 @@ class Game:
             return True
         return False
 
-    def check_winner(self) -> bool:
+    def check_winner(self) -> int:
 
         if self.hoizontal_win():
             self.winner = self.current_player
             print("Player " + self.winner.name + " has won with horizontal position")
-            return True
+            return self.current_player.symbol + 1
 
         if self.vertical_win():
             self.winner = self.current_player
             print("Player " + self.winner.name + " has won with vertical position")
-            return True
+            return self.current_player.symbol + 1
 
         if self.diagonal_win():
             self.winner = self.current_player
             print("Player " + self.winner.name + " has won with diagonal position")
-            return True
+            return self.current_player.symbol + 1
 
         # check if board is full
         if all(self.board[row][col] != 0 for row in range(3) for col in range(3)):
             print("The game ended in a draw")
-            return True
+            return 3
 
-        return False
+        return 0
 
     # Switches the player and set the isMyTurn attribute
     def switch_player(self):
@@ -124,3 +124,21 @@ class Game:
             print("AI is making a first move - is random")
             fields = self.handle_turn(index, fields)
         return fields
+
+    def check_winner2(self) -> int:
+
+        if self.hoizontal_win():
+            return self.current_player.symbol
+
+        if self.vertical_win():
+            return self.current_player.symbol
+
+        if self.diagonal_win():
+            return self.current_player.symbol
+
+        # check if board is full
+        # if all(self.board[row][col] != 0 for row in range(3) for col in range(3)):
+        # print("The game ended in a draw")
+        # return 1
+
+        return 0

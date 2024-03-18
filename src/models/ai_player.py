@@ -32,7 +32,7 @@ class SmartAIPlayer:
 
     # returns the index of the possible best move
     def find_best_move(self, game):
-        best_score = -1000
+        best_score = -100
         best_move = (-1, -1)  # row, col
         for row in range(3):
             for col in range(3):
@@ -48,6 +48,7 @@ class SmartAIPlayer:
         return best_move[0] * 3 + best_move[1]  # Convert row, col to index
 
     def minimax(self, game, depth, isMaximizing):
+        print("Depth: ", depth, "is cheking for winner")
         winner = self.check_theoretical_winner(game)
         print("TheorieWinner: ", winner)
         if winner == self.symbol:
@@ -60,7 +61,7 @@ class SmartAIPlayer:
             return 0
 
         if isMaximizing:
-            best_score = -1000
+            best_score = -100
             for row in range(3):
                 for col in range(3):
                     if game.board[row][col] == 0:
@@ -70,7 +71,7 @@ class SmartAIPlayer:
                         best_score = max(score, best_score)
             return best_score
         else:
-            best_score = 1000
+            best_score = 100
             for row in range(3):
                 for col in range(3):
                     if game.board[row][col] == 0:
