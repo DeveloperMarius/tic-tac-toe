@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import pygame
 from src.windows.window_manager import WindowManager
 from src.windows.main_menu_window import MainMenuWindow
@@ -9,8 +11,7 @@ class Main:
         self.window = pygame.display.set_mode((1280, 720))
         self.clock = pygame.time.Clock()
         self.running = True
-        self.windowManager = WindowManager()
-        self.windowManager.activeWindow = MainMenuWindow()
+        WindowManager.get_instance().activeWindow = MainMenuWindow()
         self.run()
 
     def run(self):
@@ -25,11 +26,14 @@ class Main:
             if event.type == pygame.QUIT:
                 self.running = False
             else:
-                self.windowManager.activeWindow.handleEvent(event)
+                WindowManager.get_instance().activeWindow.handleEvent(event)
 
     def render(self):
-        self.window.fill("white")
-        self.windowManager.activeWindow.draw(self.window)
+        if WindowManager.get_instance().activeWindow is None:
+            print('Active window is None')
+            return
+        self.window.fill((7, 12, 23))
+        WindowManager.get_instance().activeWindow.draw(self.window)
         pygame.display.flip()
 
 

@@ -3,6 +3,7 @@ import pygame
 from .components.menu_title import MenuTitle
 from .window_manager import Window, WindowManager
 from .components.button import Button
+from ..game.config import ClientConfig
 
 
 class MainMenuWindow(Window):
@@ -13,7 +14,7 @@ class MainMenuWindow(Window):
         self.menu_height = 0.75 * self.height
 
         self.menu_title = MenuTitle(
-            title="Main Menu",
+            title="Tic Tac Toe",
             x=self.mid_x,
             y=self.mid_y - self.menu_height / 2 + self.mid_y / 6,
         )
@@ -29,7 +30,7 @@ class MainMenuWindow(Window):
                 screen=self.screen,
                 text=text,
                 x=self.mid_x - button_width / 2,
-                y=self.mid_y * 1.25
+                y=self.mid_y * 1.3
                 - self.menu_height / 2
                 + i * button_height
                 + button_margin * (i + 1)
@@ -48,19 +49,22 @@ class MainMenuWindow(Window):
             if not button.rect.collidepoint(event.pos):
                 continue
             if button.text == "Play Online":
+                if ClientConfig.get_username() is None:
+                    print('Bitte wählen Sie einen Benutzernamen aus.')
+                    return
                 from .play_online_window import PlayOnlineWindow
 
-                WindowManager().activeWindow = PlayOnlineWindow()
+                WindowManager.get_instance().activeWindow = PlayOnlineWindow()
 
             elif button.text == "Play Offline":
                 from .game_window import GameWindow
 
-                WindowManager().activeWindow = GameWindow()
+                WindowManager.get_instance().activeWindow = GameWindow()
 
             elif button.text == "Options":
                 from .options_window import OptionsWindow
 
-                WindowManager().activeWindow = OptionsWindow()
+                WindowManager.get_instance().activeWindow = OptionsWindow()
             elif button.text == "Exit":
                 pygame.quit()
 

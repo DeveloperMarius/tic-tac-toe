@@ -2,17 +2,14 @@ from threading import Timer
 import pygame
 
 
-class Input:
+class IPInput:
 
-    def __init__(
-        self, screen, text, x, y, padding, width, height, color=(20, 33, 61)
-    ) -> None:
+    def __init__(self, screen, text, x, y, width, height, color=(20, 33, 61)) -> None:
         self.screen = screen
         self.text = text
         self.textchanged = False
         self.x = x
         self.y = y
-        self.padding = padding
         self.width = width
         self.height = height
         self.color = color
@@ -22,7 +19,7 @@ class Input:
         self.rect = pygame.draw.rect(
             self.screen,
             self.color,
-            (self.x, self.y, self.width, self.height + self.padding * 2),
+            (self.x, self.y, self.width, self.height),
             border_radius=10,
         )
 
@@ -75,12 +72,20 @@ class Input:
         pygame.font.init()
         font = pygame.font.SysFont("Comic Sans MS", 36)
         text = font.render(self.text, True, (255, 255, 255))
+        ip_text = font.render(":7571", True, (255, 255, 255))
 
         text_rect = text.get_rect(
-            topleft=(self.x + self.padding, self.y + self.padding)
+            center=(
+                self.x + self.width / 2 - ip_text.get_width() / 2,
+                self.y + self.height / 2,
+            )
+        )
+        ip_text_rect = text.get_rect(
+            topleft=(text_rect.topright[0] + 2, text_rect.topright[1])
         )
 
         self.screen.blit(text, text_rect)
+        self.screen.blit(ip_text, ip_text_rect)
 
         if self.active and self.activeblink:
             pygame.draw.rect(

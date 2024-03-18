@@ -50,15 +50,62 @@ Aufgabenverteilung Sprint 2:
 - Entwickler: Veronika
 
 #### 3. Sprint (16.02.2024 - 23.02.2024)
-Erfüllte Aufgaben von Sprint 1:
+Erfüllte Aufgaben von Sprint 2:
 - Marius: Use Cases 1 und 3 erstellt
 - Sebastian: Use Cases 2 erstellt, Menü implementiert
 - Veronika: Use Cases 4 und 5 erstellt
 
-Aufgabenverteilung Sprint 2:
+Aufgabenverteilung Sprint 3:
 - Marius: Network-Manager + Scrum
 - Sebastian: Player-Management, Projektleitung
 - Veronika: KI-Algorithmus implementieren
+
+### Week 4
+
+#### 4. Sprint (23.02.2024 - 01.03.2024)
+Erfüllte Aufgaben von Sprint 3:
+- Marius: Kommunikation
+- Sebastian: Projektleitung, auf Marius gewartet
+- Veronika: Player
+
+Lessons learned:
+- Sebastian musste auf Marius warten, was die Zeit verschwendet hat (Plannungsfehler)
+- Marius hat einen PR gestellt, welcher eigentlich nicht gemerged werden sollte (Kommunikationsfehler)
+- KI konnte nicht implementiert werden, da die von der Player-Klasse abhängt, die für später geplannt war (Plannungsfehler)
+- Marius konnte Datenbank + Eventmanagement machen, was für den nächsten Sprint geplant war (Plannungsfehler)
+
+Aufgabenverteilung Sprint 4:
+- Marius: Implementierung von neuen Events + Optimierung der Datenbank (in ständiger Absprache mit Sebastian)
+- Sebastian: Implementierung Lobby-Interface, Alpha-Version (erste Muliplayer Spiel ermöglichen)
+- Veronika: Player optimieren + KI Implementierung anfangen
+
+### Week 5
+
+#### 5. Sprint (01.03.2024 - 08.03.2024)
+Erfüllte Aufgaben von Sprint 4:
+- Marius: Neue Events implementiert, Datenbank optimiert, Chat Messaging, Client-Server-Kommunikation optimiert, große Fehler gefixt
+- Sebastian: Lobby-Interface implementiert
+- Veronika: Player und GameLogik optimiert, KI Implementierung angefangen
+
+Anmerkungen:
+- Implementierung der Alpha-Version wird wegen Krankheit auf nächsten Sprint verschoben
+
+Aufgabenverteilung Sprint 5:
+- Marius: Netzwerk Tests schreiben
+- Sebastian: Frontend von Multiplayer implementieren
+- Veronika: KI fertig implementieren
+
+### Week 6
+
+#### 6. Sprint (08.03.2024 - 12.03.2024)
+Erfüllte Aufgaben von Sprint 5:
+- Marius: Netzwerk Tests
+- Sebastian: Frontend von Multiplayer
+- Veronika: KI fertig
+
+Aufgabenverteilung Sprint 6:
+- Alle: Präsenz-Termin, in dem Netzwerk-Kommunnikation und KI Player gemerged werden
+
 
 # Codebase
 
