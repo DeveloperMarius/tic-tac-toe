@@ -8,7 +8,7 @@ class MenuTitle:
         x: int,
         y: int,
         font: str = "Courier New",
-        color: tuple[int, int, int] = (20, 33, 61),
+        color: tuple[int, int, int] = (255, 255, 255),
     ):
         self.title = title
         self.x = x

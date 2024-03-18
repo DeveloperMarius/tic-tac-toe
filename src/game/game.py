@@ -1,15 +1,15 @@
 import random
 
 from ..models.ai_player import DummyAIPlayer
-
 from ..models.ai_player import SmartAIPlayer
+
 from ..models.player import Player
 from ..windows.components.tictactoe_field import FieldRect
 
 
 class Game:
 
-    def __init__(self) -> None:
+    def __init__(self, difficulty: int = 0) -> None:
         self.winner = 0
         # 0 = Nothing
         # 1 = X
@@ -17,7 +17,16 @@ class Game:
         # randomly chosses the order of the players ([1, 2] or [2, 1])
         self.players = random.sample([1, 2], 2)
         self.player_1 = Player("Player 1", self.players[0])
-        self.player_2 = SmartAIPlayer("Player 2", self.players[1])
+        match difficulty:
+            case 0:
+
+                self.player_2 = DummyAIPlayer("Player 2", self.players[1])
+            case 1:
+
+                self.player_2 = SmartAIPlayer("Player 2", self.players[1])
+            case _:
+                self.player_2 = SmartAIPlayer("Player 2", self.players[1])
+
         self.board = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
         # set the player who starts
         if self.player_1.symbol == 1:
@@ -45,14 +54,19 @@ class Game:
             + " with symbol "
             + str(self.current_player.symbol)
         )
+
+        # Check for winner
+        if winner := self.check_winner():
+            return winner
+
         # Change the current player
         self.switch_player()
 
-        # Check for winner
-        self.check_winner()
-
         # let ai player make a move
-        if isinstance(self.current_player, SmartAIPlayer) and self.winner == 0:
+        if (
+            isinstance(self.current_player, (DummyAIPlayer, SmartAIPlayer))
+            and self.winner == 0
+        ):
             print("AI is making a move")
             index = self.current_player.make_move(self)
             fields = self.handle_turn(index, fields)
@@ -88,17 +102,17 @@ class Game:
         if self.hoizontal_win():
             self.winner = self.current_player
             print("Player " + self.winner.name + " has won with horizontal position")
-            return self.current_player.symbol + 1
+            return self.current_player.symbol
 
         if self.vertical_win():
             self.winner = self.current_player
             print("Player " + self.winner.name + " has won with vertical position")
-            return self.current_player.symbol + 1
+            return self.current_player.symbol
 
         if self.diagonal_win():
             self.winner = self.current_player
             print("Player " + self.winner.name + " has won with diagonal position")
-            return self.current_player.symbol + 1
+            return self.current_player.symbol
 
         # check if board is full
         if all(self.board[row][col] != 0 for row in range(3) for col in range(3)):
@@ -119,7 +133,7 @@ class Game:
             self.player_1.isMyTurn = True
 
     def handle_ai_first(self, fields: list[FieldRect]):
-        if isinstance(self.current_player, SmartAIPlayer):
+        if isinstance(self.current_player, (DummyAIPlayer, SmartAIPlayer)):
             index = self.current_player.make_move(self)
             print("AI is making a first move - is random")
             fields = self.handle_turn(index, fields)
