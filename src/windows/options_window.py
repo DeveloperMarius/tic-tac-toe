@@ -6,8 +6,6 @@ from .components.button import Button
 from .components.menu_title import MenuTitle
 from .components.input import Input
 from ..game.config import ClientConfig
-from ..game.events import Event, EventType
-from ..game.network import NetworkClient
 
 
 class OptionsWindow(Window):

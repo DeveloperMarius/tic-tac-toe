@@ -100,7 +100,7 @@ class TicTacToeField(BaseComponent):
             ),
         ]
 
-    def handle_events(self, event):
+    def handle_events(self, event) -> None | int:
         if event.type != pygame.MOUSEBUTTONDOWN:
             return
 
@@ -115,9 +115,8 @@ class TicTacToeField(BaseComponent):
 
             handle_turn_result = self.handle_turn(i, self.field_rects)
             # Return the index of the field and the rects to let the game handle the turn
-            if not handle_turn_result:
-                print("Game Over")
-                return
+            if isinstance(handle_turn_result, int):
+                return handle_turn_result
 
             self.field_rects = handle_turn_result
 
