@@ -1,4 +1,3 @@
-from time import sleep
 from pygame import Surface
 import pygame
 
