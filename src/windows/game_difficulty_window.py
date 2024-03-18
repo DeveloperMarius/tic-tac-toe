@@ -14,7 +14,7 @@ class GameDifficultyWindow(Window):
         self.menu_height = 0.75 * self.height
 
         self.menu_title = MenuTitle(
-            title="Wähle den Schwierigkeitsgrad",
+            title="Select your difficulty",
             x=self.mid_x,
             y=self.mid_y - self.menu_height / 2 + self.mid_y / 6,
         )
@@ -23,7 +23,7 @@ class GameDifficultyWindow(Window):
         button_height = 0.1 * self.menu_height
         button_margin = 0.025 * self.menu_height
 
-        self.menu_button_texts = ["Einfach", "Schwer"]
+        self.menu_button_texts = ["Easy", "Hard"]
 
         self.menu_buttons = [
             Button(
@@ -48,11 +48,11 @@ class GameDifficultyWindow(Window):
         for button in self.menu_buttons:
             if not button.rect.collidepoint(event.pos):
                 continue
-            elif button.text == "Einfach":
+            elif button.text == "Easy":
                 from .game_window import GameWindow
 
                 WindowManager.get_instance().activeWindow = GameWindow()
-            elif button.text == "Schwer":
+            elif button.text == "Hard":
                 from .game_window import GameWindow
 
                 WindowManager.get_instance().activeWindow = GameWindow(1)
