@@ -3,3 +3,4 @@ python-socketio
 eventlet
 aiohttp
 sqlalchemy
+random-username

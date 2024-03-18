@@ -79,6 +79,9 @@ class OptionsWindow(Window):
             if not button.rect.collidepoint(event.pos):
                 continue
             elif button.text == "Save":
+                if ClientConfig.get_username() == self.username_input.text:
+                    continue
+
                 ClientConfig.set_username(self.username_input.text)
                 # Implement success message
             elif button.text == "Back":
@@ -87,6 +90,12 @@ class OptionsWindow(Window):
                 WindowManager.get_instance().activeWindow = MainMenuWindow()
 
     def draw(self, screen):
+
+        self.menu_buttons[0].color = (
+            (99, 99, 99)
+            if ClientConfig.get_username() == self.username_input.text
+            else (129, 215, 126)
+        )
 
         username_label = pygame.font.SysFont("arial", 20).render(
             "Username:", True, (255, 255, 255)
