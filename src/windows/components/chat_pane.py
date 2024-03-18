@@ -3,6 +3,9 @@ import pygame
 from .input import Input
 
 from .base_component import BaseComponent
+from ...game.config import ClientConfig
+from ...game.events import EventType, Event
+from ...game.network import NetworkClient
 
 
 class ChatPane(BaseComponent):
@@ -25,7 +28,7 @@ class ChatPane(BaseComponent):
 
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
 
-        self.chat_log: list = [("spieler 1", "test"), ("spieler 2", "test2")]
+        self.chat_log: list = []
         self.scroll_offset = 0
         self.mouse_pos = (0, 0)
 
@@ -54,7 +57,7 @@ class ChatPane(BaseComponent):
         """Draw chat pane component"""
         self.screen.fill(self.background_color, self.rect)
 
-        for i, (author, message) in enumerate(reversed(self.chat_log)):
+        for i, chat_message in enumerate(reversed(ClientConfig.get_sessionmanager().get_chat_messages())):
             if (
                 self.y
                 + self.height
@@ -64,8 +67,9 @@ class ChatPane(BaseComponent):
             ) < self.y + self.height * 0.07:
                 continue
 
+            from_user_obj = ClientConfig.get_sessionmanager().get_user(chat_message.from_user)
             rendered_message = self.font.render(
-                f"{author}: {message}",
+                f"{from_user_obj.username if from_user_obj is not None else chat_message.from_user_username}: {chat_message.message}",
                 True,
                 self.text_color,
             )
@@ -124,7 +128,13 @@ class ChatPane(BaseComponent):
         """Handle chat pane component events"""
 
         if text := self.input.handle_events(event):
-            self.chat_log.append(("Spieler", text))
+            NetworkClient.get_instance().send(Event(EventType.CHAT_MESSAGE, {
+                'chat_message': {
+                    'to_user': None,
+                    'from_user': ClientConfig.get_user().id,
+                    'message': text
+                }
+            }))
             self.input.text = ""
 
         if event.type == pygame.MOUSEBUTTONDOWN and self.rect.collidepoint(event.pos):

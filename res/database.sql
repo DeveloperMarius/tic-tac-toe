@@ -9,10 +9,16 @@ CREATE TABLE IF NOT EXISTS games (
     finished BIGINT NULL DEFAULT NULL
 );
 
+/*
+    result:
+    - 0: draw
+    - 1: looser
+    - 2: winner
+ */
 CREATE TABLE IF NOT EXISTS game_users (
     game INTEGER NOT NULL,
     user INTEGER NOT NULL,
-    won BOOLEAN NOT NULL,
+    result INTEGER NULL DEFAULT NULL,
     PRIMARY KEY (game, user),
     FOREIGN KEY (game) REFERENCES games (id) ON DELETE CASCADE,
     FOREIGN KEY (user) REFERENCES users (id) ON DELETE CASCADE

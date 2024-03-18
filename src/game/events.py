@@ -8,6 +8,10 @@ class EventType(Enum):
     USER_JOIN = 'user_join'
     # Sent to frontend when a user leaves a server
     USER_LEAVE = 'user_leave'
+    # Sent to frontend when a user is updated
+    USER_UPDATE = 'user_update'
+    # Sent to backend when a user changes his username
+    USER_UPDATE_USERNAME = 'user_update_username'
     # Sent from server or can be requested from client to update player cache etc.
     SYNC = 'sync'
     # Sent from the frontend when a user clicked the ready button
@@ -24,8 +28,6 @@ class EventType(Enum):
     GAMEPLAY_MOVE_DENIED = 'gameplay_move_denied'
     # Remove the play field because the game is over
     GAMEPLAY_STOP = 'gameplay_stop'
-    # Sent from the server when a player has won
-    GAMEPLAY_WINNER = 'gameplay_winner'
     # Send / receive a message
     CHAT_MESSAGE = 'chat_message'
 
@@ -37,7 +39,7 @@ class Event:
 
     def __init__(self, type: EventType, data: any = None):
         self._type = type
-        self._data = data
+        self._data = data if data is not None else {}
 
     @property
     def type(self):

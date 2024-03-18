@@ -3,6 +3,7 @@ import pygame
 from .components.menu_title import MenuTitle
 from .window_manager import Window, WindowManager
 from .components.button import Button
+from ..game.config import ClientConfig
 
 
 class MainMenuWindow(Window):
@@ -48,19 +49,22 @@ class MainMenuWindow(Window):
             if not button.rect.collidepoint(event.pos):
                 continue
             if button.text == "Play Online":
+                if ClientConfig.get_username() is None:
+                    print('Bitte wählen Sie einen Benutzernamen aus.')
+                    return
                 from .play_online_window import PlayOnlineWindow
 
-                WindowManager().activeWindow = PlayOnlineWindow()
+                WindowManager.get_instance().activeWindow = PlayOnlineWindow()
 
             elif button.text == "Play Offline":
                 from .game_window import GameWindow
 
-                WindowManager().activeWindow = GameWindow()
+                WindowManager.get_instance().activeWindow = GameWindow()
 
             elif button.text == "Options":
                 from .options_window import OptionsWindow
 
-                WindowManager().activeWindow = OptionsWindow()
+                WindowManager.get_instance().activeWindow = OptionsWindow()
             elif button.text == "Exit":
                 pygame.quit()
 

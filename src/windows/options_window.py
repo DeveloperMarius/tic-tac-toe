@@ -5,6 +5,9 @@ from .window_manager import Window, WindowManager
 from .components.button import Button
 from .components.menu_title import MenuTitle
 from .components.input import Input
+from ..game.config import ClientConfig
+from ..game.events import Event, EventType
+from ..game.network import NetworkClient
 
 
 class OptionsWindow(Window):
@@ -24,9 +27,6 @@ class OptionsWindow(Window):
         button_height = 0.1 * self.menu_height
         button_margin = 0.025 * self.menu_height
 
-        # TODO:
-        # - Get current Username
-
         self.username_input = Input(
             screen=self.screen,
             x=self.mid_x - button_width / 2,
@@ -38,7 +38,7 @@ class OptionsWindow(Window):
             width=button_width,
             height=button_height,
             padding=(button_height - 38),
-            text="Enter username",  # TODO: Changeme
+            text=ClientConfig.get_username(),
         )
 
         self.menu_buttons = [
@@ -79,13 +79,12 @@ class OptionsWindow(Window):
             if not button.rect.collidepoint(event.pos):
                 continue
             elif button.text == "Save":
-                print("Save")
-                # TODO: Save username to config
-
+                ClientConfig.set_username(self.username_input.text)
+                # Implement success message
             elif button.text == "Back":
                 from .main_menu_window import MainMenuWindow
 
-                WindowManager().activeWindow = MainMenuWindow()
+                WindowManager.get_instance().activeWindow = MainMenuWindow()
 
     def draw(self, screen):
 

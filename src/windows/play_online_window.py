@@ -4,6 +4,8 @@ from .window_manager import Window, WindowManager
 from .components.button import Button
 from .components.menu_title import MenuTitle
 from .components.ip_input import IPInput
+from ..game.config import ClientConfig
+from ..game.network import NetworkClient, NetworkServer
 
 
 class PlayOnlineWindow(Window):
@@ -60,15 +62,24 @@ class PlayOnlineWindow(Window):
                 if not button.rect.collidepoint(event.pos):
                     continue
                 if button.text == "Join":
-                    print("Join")
+                    # todo check if valid ip
+                    if self.menu_input.text == "Enter IP Address":
+                        return
+                    NetworkClient.get_instance().connect(ClientConfig.get_username(), self.menu_input.text)
+                    from .lobby_window import LobbyWindow
+                    WindowManager.get_instance().activeWindow = LobbyWindow()
                 elif button.text == "Host":
+
+                    NetworkServer.get_instance().start_server()
+                    NetworkClient.get_instance().connect(ClientConfig.get_username(), '127.0.0.1')
+
                     from .lobby_window import LobbyWindow
 
-                    WindowManager().activeWindow = LobbyWindow()
+                    WindowManager.get_instance().activeWindow = LobbyWindow()
                 elif button.text == "Back":
                     from .main_menu_window import MainMenuWindow
 
-                    WindowManager().activeWindow = MainMenuWindow()
+                    WindowManager.get_instance().activeWindow = MainMenuWindow()
 
     def draw(self, screen):
         for item in self.menu_items:

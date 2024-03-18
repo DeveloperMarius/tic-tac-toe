@@ -1,5 +1,6 @@
 pygame
-socketio
+python-socketio
 eventlet
 aiohttp
 sqlalchemy
+sqlite3

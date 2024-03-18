@@ -1,7 +1,7 @@
 import subprocess
 import time
 from typing import List
-from src.models.chat_message import ChatMessage
+from src.models.chat_message import ChatMessage, LocalChatMessage
 from src.models.game import Game
 from src.models.game_user import GameUser
 from src.models.user import LocalUser, User
@@ -12,17 +12,26 @@ from sqlalchemy.orm import Session
 from sqlalchemy import String
 from sqlalchemy.event import listens_for
 from sqlalchemy.orm import Mapper
+from sqlalchemy import and_, or_
 
 
 class SessionManager:
     _users: List[LocalUser]
+    _chat_messages: List[LocalChatMessage]
 
     def __init__(self):
         self._users = []
+        self._chat_messages = []
 
     @property
     def users(self) -> List[LocalUser]:
         return self._users
+
+    def get_user_by_username(self, username) -> LocalUser | None:
+        for user in self._users:
+            if user.username == username:
+                return user
+        return None
 
     def add_user(self, user: LocalUser):
         self._users.append(user)
@@ -37,11 +46,14 @@ class SessionManager:
                 return user
         return None
 
-    def exists_with_username(self, username: str) -> bool:
+    def get_user_by_dbid(self, id: str) -> LocalUser | None:
         for user in self._users:
-            if user.username == username:
-                return True
-        return False
+            if user.db_id == id:
+                return user
+        return None
+
+    def exists_with_username(self, username: str) -> bool:
+        return self.get_user_by_username(username) is not None
 
     def exists_with_id(self, id: str) -> bool:
         for user in self._users:
@@ -61,6 +73,20 @@ class SessionManager:
     def set_users(self, users: List[LocalUser]):
         self._users = users
 
+    def get_host(self) -> LocalUser:
+        return self._users[0]
+
+    def get_chat_messages(self) -> List[LocalChatMessage]:
+        return self._chat_messages
+
+    def add_chat_messages(self, chat_messages):
+        for chat_message in chat_messages:
+            self._chat_messages.append(chat_message)
+
+    def set_chat_messages(self, chat_messages: List[LocalChatMessage]):
+        self._chat_messages = []
+        self.add_chat_messages(chat_messages)
+
 
 class Database:
 
@@ -74,6 +100,17 @@ class Database:
     @property
     def engine(self):
         return self._engine
+
+    def get_user_by_id(self, user: int) -> User:
+        with Session(self.engine, expire_on_commit=False) as session:
+            statement = select(User).where(User.id == user)
+            response = session.scalars(statement)
+            users = response.fetchall()
+            if len(users) == 0:
+                return None
+            # Use User from db
+            db_user = users[0]
+        return db_user
 
     def get_user(self, user: LocalUser):
         with Session(self.engine, expire_on_commit=False) as session:
@@ -92,8 +129,17 @@ class Database:
                 db_user = users[0]
         return db_user
 
-    def save_user(self, user: LocalUser):
-        # update(User).where(User.username == user.username).values()
+    def users(self) -> List[User]:
+        with Session(self.engine, expire_on_commit=False) as session:
+            statement = select(User)
+            response = session.scalars(statement)
+            users = response.fetchall()
+        return list(users)
+
+    def update_username(self, user: LocalUser):
+        update(User).where(User.id == user.db_id).values({
+            'username': user.username
+        })
         pass
 
     def chat_message(self, chat_message: ChatMessage) -> ChatMessage:
@@ -102,12 +148,34 @@ class Database:
             session.commit()
         return chat_message
 
+    def get_statistics(self, user: int) -> dict:
+        with Session(self.engine, expire_on_commit=False) as session:
+            statement = select(GameUser).where(GameUser.user == user)
+            response = session.scalars(statement)
+            statistics = response.fetchall()
+        wins = 0
+        losses = 0
+        draws = 0
+        for statistic in list(statistics):
+            if statistic.result == 0:
+                draws += 1
+            elif statistic.result == 1:
+                losses += 1
+            elif statistic.result == 2:
+                wins += 1
+        return {
+            'wins': wins,
+            'losses': losses,
+            'draws': draws
+        }
+
     def get_chat_messages_private(self, user1: int, user2: int) -> List[ChatMessage]:
         with Session(self.engine, expire_on_commit=False) as session:
             statement = select(ChatMessage).where(
-                (ChatMessage.to_user == user1 and ChatMessage.from_user == user2)
-                or
-                (ChatMessage.to_user == user2 and ChatMessage.from_user == user1)
+                or_(
+                    and_(ChatMessage.to_user == user1, ChatMessage.from_user == user2),
+                    and_(ChatMessage.to_user == user2, ChatMessage.from_user == user1)
+                )
             )
             response = session.scalars(statement)
             chat_messages = response.fetchall()
@@ -115,7 +183,7 @@ class Database:
 
     def get_chat_messages_global(self) -> List[ChatMessage]:
         with Session(self.engine, expire_on_commit=False) as session:
-            statement = select(ChatMessage).where(ChatMessage.to_user is None)
+            statement = select(ChatMessage).where(ChatMessage.to_user == None)
             response = session.scalars(statement)
             chat_messages = response.fetchall()
         return list(chat_messages)
@@ -141,11 +209,13 @@ class Database:
                     if _local_user.id == player:
                         local_user = _local_user
                         break
-                db_game_user = GameUser(game=db_game.id, user=local_user.db_id, won=False)
+                db_game_user = GameUser(game=db_game.id, user=local_user.db_id, result=None)
                 session.add(db_game_user)
+            session.commit()
+            game._db_id = db_game.id
         return game
 
-    def game_over(self, game: LocalGame, winner: LocalUser):
+    def game_over(self, game: LocalGame):
         with Session(self.engine, expire_on_commit=False) as session:
             # Update the game
             statement = update(Game).where(
@@ -154,14 +224,17 @@ class Database:
                 'finished': round(time.time()*1000)
             })
             session.execute(statement)
+            session.commit()
+        return
+
+    def game_over_update_user(self, game: LocalGame, user: LocalUser, result: int):
+        with Session(self.engine, expire_on_commit=False) as session:
             # Update the winner
-            statement2 = update(GameUser).where(
-                GameUser.game == game.db_id and
-                GameUser.user == winner.db_id
-            ).values({
-                'won': True
+            statement = update(GameUser).where(GameUser.game == game.db_id, GameUser.user == user.db_id).values({
+                'result': result
             })
-            session.execute(statement2)
+            session.execute(statement)
+            session.commit()
         return
 
 
