@@ -50,7 +50,12 @@ class MainMenuWindow(Window):
                 continue
             if button.text == "Play Online":
                 if ClientConfig.get_username() is None:
-                    print('Bitte wählen Sie einen Benutzernamen aus.')
+                    from random_username.generate import generate_username
+                    from .options_window import OptionsWindow
+
+                    ClientConfig.set_username(generate_username(1)[0])
+
+                    WindowManager.get_instance().activeWindow = OptionsWindow()
                     return
                 from .play_online_window import PlayOnlineWindow
 
