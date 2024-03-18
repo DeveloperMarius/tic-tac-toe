@@ -111,7 +111,10 @@ Aufgabenverteilung Sprint 6:
 
 ## Requirements
 - Python 3.10
+- `sudo apt install sqlite3 -y`
 - `pip3 install -r requirements.txt`
+
+*`pip3 uninstall socketio` if installed, because it conflicts with python-socketio*
 
 ## Running the code
 - python3 main.py
