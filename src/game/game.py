@@ -1,5 +1,8 @@
 import random
 
+from ..models.ai_player import DummyAIPlayer
+
+from ..models.ai_player import SmartAIPlayer
 from ..models.player import Player
 from ..windows.components.tictactoe_field import FieldRect
 
@@ -14,7 +17,7 @@ class Game:
         # randomly chosses the order of the players ([1, 2] or [2, 1])
         self.players = random.sample([1, 2], 2)
         self.player_1 = Player("Player 1", self.players[0])
-        self.player_2 = Player("Player 2", self.players[1])
+        self.player_2 = SmartAIPlayer("Player 2", self.players[1])
         self.board = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
         # set the player who starts
         if self.player_1.symbol == 1:
@@ -25,12 +28,14 @@ class Game:
             self.current_player = self.player_2
 
     def handle_turn(self, index: int, fields: list[FieldRect]):
-        # Check if the field is already checked
+        # checks if a winner already exists
         if self.winner != 0:
             return False
 
         # Update the field
         fields[index].checked = self.current_player.symbol
+        print("Index: " + str(index) + " Symbol: " + str(self.current_player.symbol))
+        print("Board: ", (index // 3), (index % 3))
         self.board[index // 3][index % 3] = self.current_player.symbol
         print(
             "Player "
@@ -41,10 +46,16 @@ class Game:
             + str(self.current_player.symbol)
         )
         # Change the current player
-        switch_player(self)
+        self.switch_player()
 
         # Check for winner
         self.check_winner()
+
+        # let ai player make a move
+        if isinstance(self.current_player, SmartAIPlayer) and self.winner == 0:
+            print("AI is making a move")
+            index = self.current_player.make_move(self)
+            fields = self.handle_turn(index, fields)
 
         return fields
 
@@ -72,33 +83,62 @@ class Game:
             return True
         return False
 
-    def check_winner(self) -> bool:
+    def check_winner(self) -> int:
 
         if self.hoizontal_win():
             self.winner = self.current_player
             print("Player " + self.winner.name + " has won with horizontal position")
-            return True
+            return self.current_player.symbol + 1
 
         if self.vertical_win():
             self.winner = self.current_player
             print("Player " + self.winner.name + " has won with vertical position")
-            return True
+            return self.current_player.symbol + 1
 
         if self.diagonal_win():
             self.winner = self.current_player
             print("Player " + self.winner.name + " has won with diagonal position")
-            return True
+            return self.current_player.symbol + 1
 
-        return False
+        # check if board is full
+        if all(self.board[row][col] != 0 for row in range(3) for col in range(3)):
+            print("The game ended in a draw")
+            return 3
 
+        return 0
 
-# Switches the player and set the isMyTurn attribute
-def switch_player(self):
-    if self.current_player == self.player_1:
-        self.current_player = self.player_2
-        self.player_1.isMyTurn = False
-        self.player_2.isMyTurn = True
-    else:
-        self.current_player = self.player_1
-        self.player_2.isMyTurn = False
-        self.player_1.isMyTurn = True
+    # Switches the player and set the isMyTurn attribute
+    def switch_player(self):
+        if self.current_player == self.player_1:
+            self.current_player = self.player_2
+            self.player_1.isMyTurn = False
+            self.player_2.isMyTurn = True
+        else:
+            self.current_player = self.player_1
+            self.player_2.isMyTurn = False
+            self.player_1.isMyTurn = True
+
+    def handle_ai_first(self, fields: list[FieldRect]):
+        if isinstance(self.current_player, SmartAIPlayer):
+            index = self.current_player.make_move(self)
+            print("AI is making a first move - is random")
+            fields = self.handle_turn(index, fields)
+        return fields
+
+    def check_winner2(self) -> int:
+
+        if self.hoizontal_win():
+            return self.current_player.symbol
+
+        if self.vertical_win():
+            return self.current_player.symbol
+
+        if self.diagonal_win():
+            return self.current_player.symbol
+
+        # check if board is full
+        # if all(self.board[row][col] != 0 for row in range(3) for col in range(3)):
+        # print("The game ended in a draw")
+        # return 1
+
+        return 0
