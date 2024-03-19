@@ -106,6 +106,29 @@ Erfüllte Aufgaben von Sprint 5:
 Aufgabenverteilung Sprint 6:
 - Alle: Präsenz-Termin, in dem Netzwerk-Kommunnikation und KI Player gemerged werden
 
+### Week 7
+
+#### 7. Sprint (12.03.2024 - 19.03.2024)
+Erfüllte Aufgaben von Sprint 6:
+- Alle: Alles gemerged und Bugs gefixt
+
+Aufgabenverteilung Sprint 8:
+- Marius: Leaderboard, Statistiken implementieren, Username 
+- Sebastian: Username UI, Game Play Settings, Statistiken UI, Global Error Pop-up
+- Veronika: Unit Tests für Winner-Erkennung. Tests für die KIs, KI Optimierung
+
+### Week 8
+
+#### 8. Sprint (19.03.2024 - 21.03.2024)
+Erfüllte Aufgaben von Sprint 8:
+
+
+Aufgabenverteilung Sprint 9:
+Alle: Bugfixes
+- Marius: Präsi
+- Sebastian: Präsi
+- Veronika: Dokumentation fertig
+
 
 # Codebase
 

@@ -1,12 +1,12 @@
 import pygame
 
-from .components.menu_title import MenuTitle
+
 from .window_manager import Window, WindowManager
 from .components.button import Button
-from ..game.config import Clients
+from .components.menu_title import MenuTitle
 
 
-class MainMenuWindow(Window):
+class GameDifficultyWindow(Window):
     def __init__(self):
         super().__init__()
 
@@ -14,7 +14,7 @@ class MainMenuWindow(Window):
         self.menu_height = 0.75 * self.height
 
         self.menu_title = MenuTitle(
-            title="Tic Tac Toe",
+            title="Select your difficulty",
             x=self.mid_x,
             y=self.mid_y - self.menu_height / 2 + self.mid_y / 6,
         )
@@ -23,7 +23,7 @@ class MainMenuWindow(Window):
         button_height = 0.1 * self.menu_height
         button_margin = 0.025 * self.menu_height
 
-        self.menu_button_texts = ["Play Online", "Play Offline", "Options", "Exit"]
+        self.menu_button_texts = ["Easy", "Hard"]
 
         self.menu_buttons = [
             Button(
@@ -48,32 +48,17 @@ class MainMenuWindow(Window):
         for button in self.menu_buttons:
             if not button.rect.collidepoint(event.pos):
                 continue
-            if button.text == "Play Online":
-                if Clients.first().get_username() is None:
-                    from random_username.generate import generate_username
-                    from .options_window import OptionsWindow
+            elif button.text == "Easy":
+                from .game_window import GameWindow
 
-                    Clients.first().set_username(generate_username(1)[0])
+                WindowManager.get_instance().activeWindow = GameWindow()
+            elif button.text == "Hard":
+                from .game_window import GameWindow
 
-                    WindowManager.get_instance().activeWindow = OptionsWindow()
-                    return
-                from .play_online_window import PlayOnlineWindow
-
-                WindowManager.get_instance().activeWindow = PlayOnlineWindow()
-
-            elif button.text == "Play Offline":
-                from .game_difficulty_window import GameDifficultyWindow
-
-                WindowManager.get_instance().activeWindow = GameDifficultyWindow()
-
-            elif button.text == "Options":
-                from .options_window import OptionsWindow
-
-                WindowManager.get_instance().activeWindow = OptionsWindow()
-            elif button.text == "Exit":
-                pygame.quit()
+                WindowManager.get_instance().activeWindow = GameWindow(1)
 
     def draw(self, screen):
+
         for button in self.menu_buttons:
             button.draw()
 
