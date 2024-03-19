@@ -12,20 +12,11 @@ class ClientConfig:
     _sessionmanager_instance: SessionManager | None = None
     _username: str | None = None
 
-    # {'wins': wins, 'losses': losses, 'draws': draws}
-    _statistics: dict | None = None
-
     def set_username(self, username: str):
         self._username = username
 
     def get_username(self) -> str:
         return self._username
-
-    def set_statistics(self, statistics: dict):
-        self._statistics = statistics
-
-    def get_statistics(self) -> dict:
-        return self._statistics
 
     def get_user(self) -> LocalUser | None:
         return self.get_sessionmanager().get_user_by_username(self.get_username())
