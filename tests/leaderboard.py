@@ -11,9 +11,10 @@ class TestLeaderboard(unittest.TestCase):
         ]
 
     def test_sorting(self):
-        leaderboard = random.shuffle(self.leaderboard)
-        leaderboard.sort(key=lambda x: (-x["wins"], x["loses"], -x["draws"]))
-        self.assertEqual(leaderboard, self.leaderboard)
+        for i in range(10):
+            leaderboard = random.shuffle(self.leaderboard)
+            leaderboard.sort(key=lambda x: (-x["wins"], x["loses"], -x["draws"]))
+            self.assertEqual(leaderboard, self.leaderboard)
 
 
 if __name__ == "__main__":
