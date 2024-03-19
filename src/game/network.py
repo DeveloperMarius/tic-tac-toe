@@ -73,14 +73,14 @@ class NetworkClient:
         self.config.get_eventmanager().clear_events()
         self.config.get_eventmanager().on(
             EventType.USER_JOIN,
-            lambda event: self.config.get_sessionmanager().add_user(
+            lambda event: self.config.get_sessionmanager().update_user(
                 event.data["user"]
             ),
         )
         self.config.get_eventmanager().on(
             EventType.USER_LEAVE,
-            lambda event: self.config.get_sessionmanager().remove_user(
-                event.data["user"].id
+            lambda event: self.config.get_sessionmanager().update_user(
+                event.data["user"]
             ),
         )
         self.config.get_eventmanager().on(
@@ -118,7 +118,7 @@ class NetworkClient:
         )
 
     def _event_sync(self, event):
-        self.config.get_sessionmanager().set_users(event.data["users"])
+        self.config.get_sessionmanager().update_users(event.data["users"])
         self.config.get_sessionmanager().set_chat_messages(event.data["chat_messages"])
 
     def _gameplay_start(self, event):
@@ -238,6 +238,12 @@ class NetworkServer:
 
     async def _start_server2(self):
         print("Starting server")
+        users_all = []
+        for user in ServerConfig.get_database().users():
+            local_user = LocalUser(None, user.username, False, user.id)
+            local_user.statistics = ServerConfig.get_database().get_statistics(user.id)
+            users_all.append(local_user)
+        ServerConfig.get_sessionmanager().update_users(users_all)
         self.running = True
         await self._runner.setup()
         site = web.TCPSite(self._runner, "localhost", 7175)
@@ -270,7 +276,7 @@ class NetworkServer:
             username = headers["HTTP_USERNAME"]
 
             # Check if user is already playing
-            if ServerConfig.get_sessionmanager().exists_with_username(username):
+            if ServerConfig.get_sessionmanager().exists_with_username_and_online(username):
                 return False
 
             # Apply user limit
@@ -287,7 +293,8 @@ class NetworkServer:
             user.db_id = db_user.id
             user.statistics = ServerConfig.get_database().get_statistics(user.db_id)
 
-            ServerConfig.get_sessionmanager().add_user(user)
+            user.online = True
+            ServerConfig.get_sessionmanager().update_user(user)
 
             # Trigger event
             for user_ in ServerConfig.get_sessionmanager().users:
@@ -341,7 +348,7 @@ class NetworkServer:
                 Event(
                     EventType.SYNC,
                     {
-                        "users": ServerConfig.get_sessionmanager().users,
+                        "users": ServerConfig.get_sessionmanager().users_all,
                         "chat_messages": chat_messages
                     }
                 ),
@@ -545,10 +552,12 @@ class NetworkServer:
             # Get user from local user cache
             user = ServerConfig.get_sessionmanager().get_user(sid)
 
-            # Trigger event
-            await self.send(Event(EventType.USER_LEAVE, {"user": user}), skip_sid=sid)
+            user.online = False
 
             # Save and Remove user from local user cache
-            ServerConfig.get_sessionmanager().remove_user(sid)
+            ServerConfig.get_sessionmanager().update_user(user)
+
+            # Trigger event
+            await self.send(Event(EventType.USER_LEAVE, {"user": user}), skip_sid=sid)
 
             return True

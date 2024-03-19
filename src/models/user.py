@@ -17,16 +17,17 @@ class User(Base):
 
 class LocalUser:
 
-    _id: str
+    _id: str | None
     _db_id: int | None
     _username: str
     _admin: bool = False
+    _online: bool = False
     _ready: bool = False
     _game_symbol: int | None = None
     # {'wins': wins, 'loses': loses, 'draws': draws}
     _statistics: dict | None = None
 
-    def __init__(self, id: str, username: str, admin: bool = False, db_id: int | None = None, ready: bool = False, game_symbol: int | None = None, statistics: dict | None = None):
+    def __init__(self, id: str | None, username: str, admin: bool = False, db_id: int | None = None, ready: bool = False, game_symbol: int | None = None, statistics: dict | None = None, online: bool = False):
         self._id = id
         self._username = username
         self._admin = admin
@@ -34,9 +35,10 @@ class LocalUser:
         self._ready = ready
         self._game_symbol = game_symbol
         self._statistics = statistics
+        self._online = online
 
     @property
-    def id(self) -> str:
+    def id(self) -> str | None:
         return self._id
 
     @property
@@ -78,6 +80,14 @@ class LocalUser:
     @statistics.setter
     def statistics(self, value: dict | None):
         self._statistics = value
+
+    @property
+    def online(self) -> bool:
+        return self._online
+
+    @online.setter
+    def online(self, value: bool):
+        self._online = value
 
     def __str__(self) -> str:
         return f"User(id={self.id!r}, db_id={self.db_id!r})"

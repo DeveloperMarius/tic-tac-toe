@@ -25,6 +25,10 @@ class SessionManager:
 
     @property
     def users(self) -> List[LocalUser]:
+        return [user for user in self._users if user.online is True]
+
+    @property
+    def users_all(self) -> List[LocalUser]:
         return self._users
 
     def get_user_by_username(self, username) -> LocalUser | None:
@@ -33,11 +37,15 @@ class SessionManager:
                 return user
         return None
 
-    def add_user(self, user: LocalUser):
-        self._users.append(user)
+    def update_users(self, users: List[LocalUser]):
+        for user in users:
+            self.update_user(user)
 
     def update_user(self, user: LocalUser):
-        index = next((index for (index, _user) in enumerate(self._users) if _user.id == user.id), None)
+        if not self.exists_with_username(user.username):
+            self._users.append(user)
+            return
+        index = next((index for (index, _user) in enumerate(self._users) if _user.username == user.username), None)
         if index is not None:
             self._users[index] = user
 
@@ -56,6 +64,10 @@ class SessionManager:
     def exists_with_username(self, username: str) -> bool:
         return self.get_user_by_username(username) is not None
 
+    def exists_with_username_and_online(self, username: str) -> bool:
+        user = self.get_user_by_username(username)
+        return user is not None and user.online
+
     def exists_with_id(self, id: str) -> bool:
         for user in self._users:
             if user.id == id:
@@ -69,10 +81,7 @@ class SessionManager:
         return index is not None
 
     def user_count(self) -> int:
-        return len(self._users)
-
-    def set_users(self, users: List[LocalUser]):
-        self._users = users
+        return len(self.users)
 
     def get_host(self) -> LocalUser:
         return self._users[0]

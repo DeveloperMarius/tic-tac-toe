@@ -26,7 +26,7 @@ class LeaderboardWindow(Window):
         button_margin = 0.025 * self.menu_height
 
         self.leaderboard = [
-            {"username": user.username, **user.statistics} for user in Clients.first().get_sessionmanager().users
+            {"username": user.username, **user.statistics} for user in Clients.first().get_sessionmanager().users_all
         ]
 
         self.leaderboard.sort(key=lambda x: (-x["wins"], x["loses"], -x["draws"]))
