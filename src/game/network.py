@@ -1,8 +1,9 @@
-import imp
+import os
+
 import socketio
 from src.models.chat_message import LocalChatMessage, ChatMessage
 from src.models.user import LocalUser
-from src.game.config import ClientConfig, ServerConfig
+from src.game.config import ClientConfig, ServerConfig, Clients
 from src.game.events import Event, EventType
 import json
 from src.utils.json_encoder import ModelEncoder
@@ -16,114 +17,135 @@ from src.windows.window_manager import WindowManager
 
 class NetworkClient:
 
-    _static_network_client = None
+    _static_network_client_1 = None
 
     @staticmethod
-    def get_instance():
-        if NetworkClient._static_network_client is None:
-            NetworkClient._static_network_client = NetworkClient()
-        return NetworkClient._static_network_client
+    def first():
+        if NetworkClient._static_network_client_1 is None:
+            NetworkClient._static_network_client_1 = NetworkClient(0)
+        return NetworkClient._static_network_client_1
+
+    _static_network_client_2 = None
+
+    @staticmethod
+    def second():
+        if NetworkClient._static_network_client_2 is None:
+            NetworkClient._static_network_client_2 = NetworkClient(1)
+        return NetworkClient._static_network_client_2
 
     _sio: socketio.Client
     _username: str
+    _connected: bool = False
+    _config: int
 
-    def __init__(self):
+    def __init__(self, config: int):
         self._sio = socketio.Client()
+        self._config = config
 
-    def __enter__(self, username, host):
-        self.connect(username, host)
+    def __enter__(self, host):
+        self.connect(host)
         return self
 
     @property
-    def username(self):
-        return self._username
+    def config(self):
+        return Clients.clients()[self._config]
 
-    def connect(self, username, host, port=7175):
-        self._username = username
+    def connect(self, host, port=7175):
+        if self._connected:
+            return
+        self._connected = True
         self.call_backs()
         self._register_default_events()
         self._sio.connect(
-            f"http://{host}:{port}", {"username": self.username}, "authtoken"
+            f"http://{host}:{port}", {"username": self.config.get_username()}, "authtoken"
         )
         self.send(Event(EventType.SYNC))
 
     def disconnect(self):
         self._sio.disconnect()
+        self._connected = False
+
+    @property
+    def connected(self):
+        return self._connected
 
     def _register_default_events(self):
-        ClientConfig.get_eventmanager().clear_events()
-        ClientConfig.get_eventmanager().on(
+        self.config.get_eventmanager().clear_events()
+        self.config.get_eventmanager().on(
             EventType.USER_JOIN,
-            lambda event: ClientConfig.get_sessionmanager().add_user(
+            lambda event: self.config.get_sessionmanager().add_user(
                 event.data["user"]
             ),
         )
-        ClientConfig.get_eventmanager().on(
+        self.config.get_eventmanager().on(
             EventType.USER_LEAVE,
-            lambda event: ClientConfig.get_sessionmanager().remove_user(
+            lambda event: self.config.get_sessionmanager().remove_user(
                 event.data["user"].id
             ),
         )
-        ClientConfig.get_eventmanager().on(
+        self.config.get_eventmanager().on(
             EventType.USER_UPDATE,
-            lambda event: ClientConfig.get_sessionmanager().update_user(
+            lambda event: self.config.get_sessionmanager().update_user(
                 event.data["user"]
             ),
         )
-        ClientConfig.get_eventmanager().on(
+        self.config.get_eventmanager().on(
             EventType.CHAT_MESSAGE,
-            lambda event: ClientConfig.get_sessionmanager().add_chat_messages(
+            lambda event: self.config.get_sessionmanager().add_chat_messages(
                 event.data["chat_messages"]
             ),
         )
-        ClientConfig.get_eventmanager().on(
+        self.config.get_eventmanager().on(
             EventType.SYNC, lambda event: self._event_sync(event)
         )
-        ClientConfig.get_eventmanager().on(
+        self.config.get_eventmanager().on(
             EventType.GAMEPLAY_START, lambda event: self._gameplay_start(event)
         )
-        ClientConfig.get_eventmanager().on(
+        self.config.get_eventmanager().on(
             # TODO Implement success message
             EventType.GAMEPLAY_MOVE_ACCEPTED, lambda event: print('Move accepted')
         )
-        ClientConfig.get_eventmanager().on(
+        self.config.get_eventmanager().on(
             # TODO Implement error message
             EventType.GAMEPLAY_MOVE_DENIED, lambda event: print('Move denied')
         )
-        ClientConfig.get_eventmanager().on(
+        self.config.get_eventmanager().on(
             # TODO Implement finish message / back to menu
             EventType.GAMEPLAY_STOP, lambda event: self._gameplay_stop(event)
         )
-        ClientConfig.get_eventmanager().on(
+        self.config.get_eventmanager().on(
             EventType.GAMEPLAY_MOVE_ACCEPTED, lambda event: self._gameplay_move_accepted(event)
         )
 
     def _event_sync(self, event):
-        ClientConfig.get_sessionmanager().set_users(event.data["users"])
-        ClientConfig.get_sessionmanager().set_chat_messages(event.data["chat_messages"])
-        ClientConfig.set_statistics(event.data["statistics"])
+        self.config.get_sessionmanager().set_users(event.data["users"])
+        self.config.get_sessionmanager().set_chat_messages(event.data["chat_messages"])
 
     def _gameplay_start(self, event):
+        if os.getenv('env') == 'test':
+            return
         from ..windows.multiplayer_game_window import MultiplayerGameWindow
 
         WindowManager.get_instance().activeWindow = MultiplayerGameWindow()
 
     def _gameplay_stop(self, event):
         print('Game over')
-        if ClientConfig.get_user().id in event.data['winners']:
+        if self.config.get_user().id in event.data['winners']:
             if len(event.data['winners']) == 1:
-                statistics = ClientConfig.get_statistics()
-                statistics['wins'] += 1
-                ClientConfig.set_statistics(statistics)
+                # todo win popup
+                pass
             else:
-                statistics = ClientConfig.get_statistics()
-                statistics['draws'] += 1
-                ClientConfig.set_statistics(statistics)
-
+                # todo draw popup
+                pass
+        else:
+            # todo lose popup
+            pass
 
     def _gameplay_move_accepted(self, event):
+        if os.getenv('env') == 'test':
+            return
         fields = WindowManager.get_instance().activeWindow.tictactoe_field.field_rects
-        fields[event.data['x'] + (event.data['y'] * 3)].checked = ClientConfig.get_sessionmanager().get_user(event.data['user_id']).game_symbol
+        fields[event.data['x'] + (event.data['y'] * 3)].checked = self.config.get_sessionmanager().get_user(event.data['user_id']).game_symbol
         WindowManager.get_instance().activeWindow.tictactoe_field.field_rects = fields
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -143,23 +165,23 @@ class NetworkClient:
             if "chat_messages" in parsed_data:
                 chat_messages = []
                 for chat_message in parsed_data["chat_messages"]:
-                    from_user = ClientConfig.get_sessionmanager().get_user_by_dbid(
+                    from_user = self.config.get_sessionmanager().get_user_by_dbid(
                         chat_message["from_user"]
                     )
                     chat_messages.append(
                         LocalChatMessage(
-                            from_user.id if from_user is not None else None,
+                            from_user.id if from_user is not None else chat_message["from_user"],
                             chat_message["message"],
                             chat_message["created"],
                             (
-                                ClientConfig.get_sessionmanager()
+                                self.config.get_sessionmanager()
                                 .get_user_by_dbid(chat_message["to_user"])
                                 .id
                                 if chat_message["to_user"] is not None
                                 else None
                             ),
                             chat_message["db_id"],
-                            chat_message["from_user_username"],
+                            chat_message["from_user_username"]
                         )
                     )
                 parsed_data["chat_messages"] = chat_messages
@@ -169,7 +191,7 @@ class NetworkClient:
                     users.append(LocalUser(**user))
                 parsed_data["users"] = users
             event_type = EventType(event)
-            ClientConfig.get_eventmanager().trigger(Event(event_type, parsed_data))
+            self.config.get_eventmanager().trigger(Event(event_type, parsed_data, self.config.get_username()))
 
         @self._sio.event
         def disconnect():
@@ -263,6 +285,7 @@ class NetworkServer:
 
             db_user = ServerConfig.get_database().get_user(user)
             user.db_id = db_user.id
+            user.statistics = ServerConfig.get_database().get_statistics(user.db_id)
 
             ServerConfig.get_sessionmanager().add_user(user)
 
@@ -319,8 +342,7 @@ class NetworkServer:
                     EventType.SYNC,
                     {
                         "users": ServerConfig.get_sessionmanager().users,
-                        "chat_messages": chat_messages,
-                        "statistics": ServerConfig.get_database().get_statistics(ServerConfig.get_sessionmanager().get_user(sid).db_id)
+                        "chat_messages": chat_messages
                     }
                 ),
                 to=sid,
@@ -463,11 +485,15 @@ class NetworkServer:
                     game
                 )
                 for player in game.players:
+                    player_user = ServerConfig.get_sessionmanager().get_user(player)
                     ServerConfig.get_database().game_over_update_user(
                         game,
-                        ServerConfig.get_sessionmanager().get_user(player),
+                        player_user,
                         0
                     )
+                    player_user.statistics = ServerConfig.get_database().get_statistics(player_user.db_id)
+                    ServerConfig.get_sessionmanager().update_user(player_user)
+                    await self.send(Event(EventType.USER_UPDATE, {"user": player_user}))
                 await self.send(
                     Event(EventType.GAMEPLAY_STOP, {"winners": game.players})
                 )
@@ -480,16 +506,24 @@ class NetworkServer:
                 for player in game.players:
                     if player == game.current_player:
                         continue
+                    player_user = ServerConfig.get_sessionmanager().get_user(player)
                     ServerConfig.get_database().game_over_update_user(
                         game,
-                        ServerConfig.get_sessionmanager().get_user(player),
+                        player_user,
                         1
                     )
+                    player_user.statistics = ServerConfig.get_database().get_statistics(player_user.db_id)
+                    ServerConfig.get_sessionmanager().update_user(player_user)
+                    await self.send(Event(EventType.USER_UPDATE, {"user": player_user}))
+                current_player_user = ServerConfig.get_sessionmanager().get_user(game.current_player)
                 ServerConfig.get_database().game_over_update_user(
                     game,
-                    ServerConfig.get_sessionmanager().get_user(game.current_player),
+                    current_player_user,
                     2
                 )
+                current_player_user.statistics = ServerConfig.get_database().get_statistics(current_player_user.db_id)
+                ServerConfig.get_sessionmanager().update_user(current_player_user)
+                await self.send(Event(EventType.USER_UPDATE, {"user": current_player_user}))
                 await self.send(
                     Event(EventType.GAMEPLAY_STOP, {"winners": [
                         game.current_player

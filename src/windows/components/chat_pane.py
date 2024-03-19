@@ -3,7 +3,7 @@ import pygame
 from .input import Input
 
 from .base_component import BaseComponent
-from ...game.config import ClientConfig
+from ...game.config import Clients
 from ...game.events import EventType, Event
 from ...game.network import NetworkClient
 
@@ -57,7 +57,7 @@ class ChatPane(BaseComponent):
         """Draw chat pane component"""
         self.screen.fill(self.background_color, self.rect)
 
-        for i, chat_message in enumerate(reversed(ClientConfig.get_sessionmanager().get_chat_messages())):
+        for i, chat_message in enumerate(reversed(Clients.first().get_sessionmanager().get_chat_messages())):
             if (
                 self.y
                 + self.height
@@ -67,7 +67,7 @@ class ChatPane(BaseComponent):
             ) < self.y + self.height * 0.07:
                 continue
 
-            from_user_obj = ClientConfig.get_sessionmanager().get_user(chat_message.from_user)
+            from_user_obj = Clients.first().get_sessionmanager().get_user(chat_message.from_user)
             rendered_message = self.font.render(
                 f"{from_user_obj.username if from_user_obj is not None else chat_message.from_user_username}: {chat_message.message}",
                 True,
@@ -128,10 +128,10 @@ class ChatPane(BaseComponent):
         """Handle chat pane component events"""
 
         if text := self.input.handle_events(event):
-            NetworkClient.get_instance().send(Event(EventType.CHAT_MESSAGE, {
+            NetworkClient.first().send(Event(EventType.CHAT_MESSAGE, {
                 'chat_message': {
                     'to_user': None,
-                    'from_user': ClientConfig.get_user().id,
+                    'from_user': Clients.first().get_user().id,
                     'message': text
                 }
             }))

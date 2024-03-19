@@ -18,7 +18,7 @@ class LocalGame:
         self._players = player_ids
 
     def handle_turn(self, index: int, fields: list[FieldRect]):
-        NetworkClient.get_instance().send(Event(EventType.GAMEPLAY_MOVE_RESPONSE, {
+        NetworkClient.first().send(Event(EventType.GAMEPLAY_MOVE_RESPONSE, {
             'x': index % 3,
             'y': index // 3
         }))
