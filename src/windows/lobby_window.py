@@ -44,7 +44,19 @@ class LobbyWindow(Window):
             self.height * 0.05,
         )
 
-        self.buttons = [button_ready, button_leave]
+        button_leaderboard = Button(
+            self.screen,
+            "Leaderboard",
+            self.lobby_pane.x,
+            self.lobby_pane.y
+            + self.lobby_pane.height
+            + button_leave.height
+            + self.height * 0.04,
+            self.lobby_pane.width,
+            self.height * 0.05,
+        )
+
+        self.buttons = [button_ready, button_leave, button_leaderboard]
 
     def draw(self, _: pygame.Surface):
         self.lobby_pane.draw()
@@ -66,9 +78,7 @@ class LobbyWindow(Window):
                             NetworkClient.get_instance().send(
                                 Event(
                                     EventType.LOBBY_READY,
-                                    {
-                                        "ready": not ClientConfig.get_user().ready
-                                    },
+                                    {"ready": not ClientConfig.get_user().ready},
                                 )
                             )
 
@@ -83,3 +93,12 @@ class LobbyWindow(Window):
                             print("Reloading ...")
 
                             WindowManager.get_instance().activeWindow = MainMenuWindow()
+
+                case "Leaderboard":
+                    if event.type == pygame.MOUSEBUTTONUP:
+                        if button.rect.collidepoint(event.pos):
+                            from .leaderboard_window import LeaderboardWindow
+
+                            WindowManager.get_instance().activeWindow = (
+                                LeaderboardWindow()
+                            )
