@@ -72,6 +72,7 @@ class MainMenuWindow(Window):
                 WindowManager.get_instance().activeWindow = OptionsWindow()
             elif button.text == "Exit":
                 pygame.quit()
+                exit()
 
     def draw(self, screen):
         for button in self.menu_buttons:

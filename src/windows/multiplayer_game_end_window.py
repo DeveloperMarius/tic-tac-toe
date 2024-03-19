@@ -9,7 +9,7 @@ from ..game.network import NetworkClient, NetworkServer
 
 
 class MultiplayerGameEndWindow(Window):
-    def __init__(self, field_rects, winner, current_player):
+    def __init__(self, field_rects=[], winner=1, current_player=2):
         super().__init__()
         self.winner = winner
         self.current_player = current_player
@@ -38,8 +38,8 @@ class MultiplayerGameEndWindow(Window):
         self.menu_buttons = [
             Button(
                 self.screen,
-                "Restart",
-                self.mid_x - button_width - 10,
+                "Back to Lobby",
+                self.mid_x - self.width / 6 - button_width - 10,
                 self.mid_y,
                 button_width,
                 button_height,
@@ -47,12 +47,14 @@ class MultiplayerGameEndWindow(Window):
             Button(
                 self.screen,
                 "Main Menu",
-                self.mid_x + 10,
+                self.mid_x - self.width / 6 + 10,
                 self.mid_y,
                 button_width,
                 button_height,
             ),
         ]
+
+        self.title_font = pygame.font.SysFont("Comic Sans MS", 54)
 
     def draw(self, _: pygame.Surface):
         self.tictactoe_field.draw()
@@ -66,9 +68,9 @@ class MultiplayerGameEndWindow(Window):
                 True,
                 (255, 255, 255),
             )
-        elif self.winner == self.current_player:
+        elif self.winner != 3:
             text = self.title_font.render(
-                f"AI won! ({'O' if self.winner == 2 else 'X'})",
+                f"Enemy won! ({'O' if self.winner == 2 else 'X'})",
                 True,
                 (255, 255, 255),
             )
@@ -77,7 +79,7 @@ class MultiplayerGameEndWindow(Window):
 
         text_rect = text.get_rect()
         text_rect.center = (
-            self.x + self.size / 2,
+            self.width / 3,
             self.height / 2 - text_rect.height * 1.5,
         )
         self.screen.blit(text, text_rect)
@@ -103,9 +105,11 @@ class MultiplayerGameEndWindow(Window):
                     print("Main Menu")
                     from .main_menu_window import MainMenuWindow
 
-                    NetworkClient.get_instance().disconnect()
-                    if NetworkServer.get_instance().running:
-                        NetworkServer.get_instance().shutdown()
-                    print("Reloading ...")
-
-                    WindowManager.get_instance().activeWindow = MainMenuWindow()
+                    try:
+                        NetworkClient.first().disconnect()
+                        if NetworkServer.get_instance().running:
+                            NetworkServer.get_instance().shutdown()
+                    except Exception:
+                        print("Error leaving")
+                    finally:
+                        WindowManager.get_instance().activeWindow = MainMenuWindow()
