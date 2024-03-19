@@ -63,7 +63,7 @@ class LobbyPane(BaseComponent):
         )
         # Draw host text
         host_text = self.font.render(
-            f"{Clients.first().get_sessionmanager().users[0].username if len(ClientConfig.get_sessionmanager().users) > 0 else 'Loading...'}",
+            f"{Clients.first().get_sessionmanager().users[0].username if len(Clients.first().get_sessionmanager().users) > 0 else 'Loading...'}",
             True,
             (255, 255, 255),
         )
