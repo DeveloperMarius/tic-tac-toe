@@ -57,7 +57,9 @@ class NetworkClient:
         self.call_backs()
         self._register_default_events()
         self._sio.connect(
-            f"http://{host}:{port}", {"username": self.config.get_username()}, "authtoken"
+            f"http://{host}:{port}",
+            {"username": self.config.get_username()},
+            "authtoken",
         )
         self.send(Event(EventType.SYNC))
 
@@ -73,9 +75,7 @@ class NetworkClient:
         self.config.get_eventmanager().clear_events()
         self.config.get_eventmanager().on(
             EventType.USER_JOIN,
-            lambda event: self.config.get_sessionmanager().add_user(
-                event.data["user"]
-            ),
+            lambda event: self.config.get_sessionmanager().add_user(event.data["user"]),
         )
         self.config.get_eventmanager().on(
             EventType.USER_LEAVE,
@@ -103,18 +103,22 @@ class NetworkClient:
         )
         self.config.get_eventmanager().on(
             # TODO Implement success message
-            EventType.GAMEPLAY_MOVE_ACCEPTED, lambda event: print('Move accepted')
+            EventType.GAMEPLAY_MOVE_ACCEPTED,
+            lambda event: print("Move accepted"),
         )
         self.config.get_eventmanager().on(
             # TODO Implement error message
-            EventType.GAMEPLAY_MOVE_DENIED, lambda event: print('Move denied')
+            EventType.GAMEPLAY_MOVE_DENIED,
+            lambda event: print("Move denied"),
         )
         self.config.get_eventmanager().on(
             # TODO Implement finish message / back to menu
-            EventType.GAMEPLAY_STOP, lambda event: self._gameplay_stop(event)
+            EventType.GAMEPLAY_STOP,
+            lambda event: self._gameplay_stop(event),
         )
         self.config.get_eventmanager().on(
-            EventType.GAMEPLAY_MOVE_ACCEPTED, lambda event: self._gameplay_move_accepted(event)
+            EventType.GAMEPLAY_MOVE_ACCEPTED,
+            lambda event: self._gameplay_move_accepted(event),
         )
 
     def _event_sync(self, event):
@@ -122,30 +126,31 @@ class NetworkClient:
         self.config.get_sessionmanager().set_chat_messages(event.data["chat_messages"])
 
     def _gameplay_start(self, event):
-        if os.getenv('env') == 'test':
+        if os.getenv("env") == "test":
             return
         from ..windows.multiplayer_game_window import MultiplayerGameWindow
 
         WindowManager.get_instance().activeWindow = MultiplayerGameWindow()
 
     def _gameplay_stop(self, event):
-        print('Game over')
-        if self.config.get_user().id in event.data['winners']:
-            if len(event.data['winners']) == 1:
-                # todo win popup
-                pass
-            else:
-                # todo draw popup
-                pass
-        else:
-            # todo lose popup
-            pass
+        print("Game over")
+        from ..windows.multiplayer_game_end_window import MultiplayerGameEndWindow
+
+        WindowManager.get_instance().activeWindow = MultiplayerGameEndWindow(
+            WindowManager.get_instance().activeWindow.tictactoe_field.field_rects,
+            self.config.get_sessionmanager()
+            .get_user(event.data["winners"][0])
+            .game_symbol if len(event.data["winners"]) < 2 else 3,
+            self.config.get_user().game_symbol,
+        )
 
     def _gameplay_move_accepted(self, event):
-        if os.getenv('env') == 'test':
+        if os.getenv("env") == "test":
             return
         fields = WindowManager.get_instance().activeWindow.tictactoe_field.field_rects
-        fields[event.data['x'] + (event.data['y'] * 3)].checked = self.config.get_sessionmanager().get_user(event.data['user_id']).game_symbol
+        fields[event.data["x"] + (event.data["y"] * 3)].checked = (
+            self.config.get_sessionmanager().get_user(event.data["user_id"]).game_symbol
+        )
         WindowManager.get_instance().activeWindow.tictactoe_field.field_rects = fields
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -170,7 +175,11 @@ class NetworkClient:
                     )
                     chat_messages.append(
                         LocalChatMessage(
-                            from_user.id if from_user is not None else chat_message["from_user"],
+                            (
+                                from_user.id
+                                if from_user is not None
+                                else chat_message["from_user"]
+                            ),
                             chat_message["message"],
                             chat_message["created"],
                             (
@@ -181,7 +190,7 @@ class NetworkClient:
                                 else None
                             ),
                             chat_message["db_id"],
-                            chat_message["from_user_username"]
+                            chat_message["from_user_username"],
                         )
                     )
                 parsed_data["chat_messages"] = chat_messages
@@ -191,7 +200,9 @@ class NetworkClient:
                     users.append(LocalUser(**user))
                 parsed_data["users"] = users
             event_type = EventType(event)
-            self.config.get_eventmanager().trigger(Event(event_type, parsed_data, self.config.get_username()))
+            self.config.get_eventmanager().trigger(
+                Event(event_type, parsed_data, self.config.get_username())
+            )
 
         @self._sio.event
         def disconnect():
@@ -342,8 +353,8 @@ class NetworkServer:
                     EventType.SYNC,
                     {
                         "users": ServerConfig.get_sessionmanager().users,
-                        "chat_messages": chat_messages
-                    }
+                        "chat_messages": chat_messages,
+                    },
                 ),
                 to=sid,
             )
@@ -376,7 +387,7 @@ class NetworkServer:
                 # Assign user symbols
                 for i in range(len(users)):
                     user_ = users[i]
-                    user_.game_symbol = i+1
+                    user_.game_symbol = i + 1
                     ServerConfig.get_sessionmanager().update_user(user_)
                     await self.send(Event(EventType.USER_UPDATE, {"user": user_}))
 
@@ -395,7 +406,7 @@ class NetworkServer:
         @self._sio.event
         async def user_update_username(sid, data):
             user = ServerConfig.get_sessionmanager().get_user(sid)
-            user.username = data['username']
+            user.username = data["username"]
             ServerConfig.get_sessionmanager().update_user(user)
             ServerConfig.get_database().update_username(user)
             await self.send(Event(EventType.USER_UPDATE, {"user": user}))
@@ -448,50 +459,51 @@ class NetworkServer:
 
             # Check if game is already finished
             if game.finished:
-                print('GAME IS ALREADY FINISHED')
+                print("GAME IS ALREADY FINISHED")
                 return
 
             # Check if user is allowed to move
             if sid != game.current_player:
                 await self.send(
-                    Event(EventType.GAMEPLAY_MOVE_DENIED, {
-                        'message': 'Du bist nicht an der Reihe'
-                    }), to=sid
+                    Event(
+                        EventType.GAMEPLAY_MOVE_DENIED,
+                        {"message": "Du bist nicht an der Reihe"},
+                    ),
+                    to=sid,
                 )
                 return
 
             # Make board move
-            success = game.handle_turn(data['x'], data['y'])
+            success = game.handle_turn(data["x"], data["y"])
             if not success:
                 await self.send(
-                    Event(EventType.GAMEPLAY_MOVE_DENIED, {
-                        'message': 'Du kannst in dieses Feld nicht setzen'
-                    }), to=sid
+                    Event(
+                        EventType.GAMEPLAY_MOVE_DENIED,
+                        {"message": "Du kannst in dieses Feld nicht setzen"},
+                    ),
+                    to=sid,
                 )
                 return
 
             # Send back that the move was accepted
             await self.send(
-                Event(EventType.GAMEPLAY_MOVE_ACCEPTED, {
-                    'x': data['x'],
-                    'y': data['y'],
-                    'user_id': game.current_player
-                })
+                Event(
+                    EventType.GAMEPLAY_MOVE_ACCEPTED,
+                    {"x": data["x"], "y": data["y"], "user_id": game.current_player},
+                )
             )
 
             if game.is_draw():
                 game.finished = True
-                ServerConfig.get_database().game_over(
-                    game
-                )
+                ServerConfig.get_database().game_over(game)
                 for player in game.players:
                     player_user = ServerConfig.get_sessionmanager().get_user(player)
                     ServerConfig.get_database().game_over_update_user(
-                        game,
-                        player_user,
-                        0
+                        game, player_user, 0
                     )
-                    player_user.statistics = ServerConfig.get_database().get_statistics(player_user.db_id)
+                    player_user.statistics = ServerConfig.get_database().get_statistics(
+                        player_user.db_id
+                    )
                     ServerConfig.get_sessionmanager().update_user(player_user)
                     await self.send(Event(EventType.USER_UPDATE, {"user": player_user}))
                 await self.send(
@@ -500,34 +512,36 @@ class NetworkServer:
                 return
             if game.check_winner():
                 game.finished = True
-                ServerConfig.get_database().game_over(
-                    game
-                )
+                ServerConfig.get_database().game_over(game)
                 for player in game.players:
                     if player == game.current_player:
                         continue
                     player_user = ServerConfig.get_sessionmanager().get_user(player)
                     ServerConfig.get_database().game_over_update_user(
-                        game,
-                        player_user,
-                        1
+                        game, player_user, 1
                     )
-                    player_user.statistics = ServerConfig.get_database().get_statistics(player_user.db_id)
+                    player_user.statistics = ServerConfig.get_database().get_statistics(
+                        player_user.db_id
+                    )
                     ServerConfig.get_sessionmanager().update_user(player_user)
                     await self.send(Event(EventType.USER_UPDATE, {"user": player_user}))
-                current_player_user = ServerConfig.get_sessionmanager().get_user(game.current_player)
-                ServerConfig.get_database().game_over_update_user(
-                    game,
-                    current_player_user,
-                    2
+                current_player_user = ServerConfig.get_sessionmanager().get_user(
+                    game.current_player
                 )
-                current_player_user.statistics = ServerConfig.get_database().get_statistics(current_player_user.db_id)
+                ServerConfig.get_database().game_over_update_user(
+                    game, current_player_user, 2
+                )
+                current_player_user.statistics = (
+                    ServerConfig.get_database().get_statistics(
+                        current_player_user.db_id
+                    )
+                )
                 ServerConfig.get_sessionmanager().update_user(current_player_user)
-                await self.send(Event(EventType.USER_UPDATE, {"user": current_player_user}))
                 await self.send(
-                    Event(EventType.GAMEPLAY_STOP, {"winners": [
-                        game.current_player
-                    ]})
+                    Event(EventType.USER_UPDATE, {"user": current_player_user})
+                )
+                await self.send(
+                    Event(EventType.GAMEPLAY_STOP, {"winners": [game.current_player]})
                 )
                 return
 
