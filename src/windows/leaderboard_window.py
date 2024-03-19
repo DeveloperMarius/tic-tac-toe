@@ -5,6 +5,7 @@ from .components.menu_title import MenuTitle
 from .window_manager import Window, WindowManager
 from .components.button import Button
 from .components.leaderboard_row import LeaderboardRow
+from ..game.config import Clients
 
 
 class LeaderboardWindow(Window):
@@ -24,11 +25,8 @@ class LeaderboardWindow(Window):
         button_height = 0.1 * self.menu_height
         button_margin = 0.025 * self.menu_height
 
-        # TODO: Get leaderboard
         self.leaderboard = [
-            {"username": "test", "wins": 2, "loses": 3, "draws": 5},
-            {"username": "test2", "wins": 3, "loses": 2, "draws": 5},
-            {"username": "test3", "wins": 3, "loses": 2, "draws": 6},
+            {"username": user.username, **user.statistics} for user in Clients.first().get_sessionmanager().users
         ]
 
         self.leaderboard.sort(key=lambda x: (-x["wins"], x["loses"], -x["draws"]))
