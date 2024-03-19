@@ -384,6 +384,7 @@ class NetworkServer:
                 for i in range(len(users)):
                     user_ = users[i]
                     user_.game_symbol = i+1
+                    user_.ready = False
                     ServerConfig.get_sessionmanager().update_user(user_)
                     await self.send(Event(EventType.USER_UPDATE, {"user": user_}))
 
@@ -553,6 +554,7 @@ class NetworkServer:
             user = ServerConfig.get_sessionmanager().get_user(sid)
 
             user.online = False
+            user.ready = False
 
             # Save and Remove user from local user cache
             ServerConfig.get_sessionmanager().update_user(user)
