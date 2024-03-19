@@ -38,7 +38,8 @@ class SessionManager:
 
     def update_user(self, user: LocalUser):
         index = next((index for (index, _user) in enumerate(self._users) if _user.id == user.id), None)
-        self._users[index] = user
+        if index is not None:
+            self._users[index] = user
 
     def get_user(self, id: str) -> LocalUser | None:
         for user in self._users:
@@ -154,18 +155,18 @@ class Database:
             response = session.scalars(statement)
             statistics = response.fetchall()
         wins = 0
-        losses = 0
+        loses = 0
         draws = 0
         for statistic in list(statistics):
             if statistic.result == 0:
                 draws += 1
             elif statistic.result == 1:
-                losses += 1
+                loses += 1
             elif statistic.result == 2:
                 wins += 1
         return {
             'wins': wins,
-            'losses': losses,
+            'loses': loses,
             'draws': draws
         }
 

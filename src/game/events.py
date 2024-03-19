@@ -36,10 +36,12 @@ class Event:
 
     _type: EventType
     _data: any
+    _reciever: str | None
 
-    def __init__(self, type: EventType, data: any = None):
+    def __init__(self, type: EventType, data: any = None, reciever: str | None = None):
         self._type = type
         self._data = data if data is not None else {}
+        self._reciever = reciever
 
     @property
     def type(self):
@@ -49,6 +51,10 @@ class Event:
     def data(self):
         return self._data
 
+    @property
+    def reciever(self) -> str | None:
+        return self._reciever
+
     def __str__(self):
         return f"Event: {self.type.name}, Data: {self.data}"
 
@@ -56,6 +62,7 @@ class Event:
 class EventManager:
 
     _listener: dict[EventType, List[callable]] = {}
+    _listener_any: List[callable] = []
 
     def __init__(self):
         self._events = []
@@ -68,11 +75,16 @@ class EventManager:
         if event.type in self.listener.keys():
             for listener in self.listener[event.type]:
                 listener(event)
+        for listener in self._listener_any:
+            listener(event)
 
     def on(self, event_type: EventType, callback: callable):
         if event_type not in self.listener.keys():
             self.listener[event_type] = []
         self.listener[event_type].append(callback)
+
+    def on_any(self, callback: callable):
+        self._listener_any.append(callback)
 
     def clear_events(self):
         self._listener = {}

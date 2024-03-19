@@ -4,7 +4,7 @@ from .window_manager import Window, WindowManager
 from .components.button import Button
 from .components.chat_pane import ChatPane
 from .components.lobby_pane import LobbyPane
-from ..game.config import ClientConfig
+from ..game.config import Clients
 from ..game.events import Event, EventType
 from ..game.network import NetworkServer, NetworkClient
 
@@ -44,7 +44,19 @@ class LobbyWindow(Window):
             self.height * 0.05,
         )
 
-        self.buttons = [button_ready, button_leave]
+        button_leaderboard = Button(
+            self.screen,
+            "Leaderboard",
+            self.lobby_pane.x,
+            self.lobby_pane.y
+            + self.lobby_pane.height
+            + button_leave.height
+            + self.height * 0.04,
+            self.lobby_pane.width,
+            self.height * 0.05,
+        )
+
+        self.buttons = [button_ready, button_leave, button_leaderboard]
 
     def draw(self, _: pygame.Surface):
         self.lobby_pane.draw()
@@ -63,11 +75,11 @@ class LobbyWindow(Window):
                 case "Ready":
                     if event.type == pygame.MOUSEBUTTONUP:
                         if button.rect.collidepoint(event.pos):
-                            NetworkClient.get_instance().send(
+                            NetworkClient.first().send(
                                 Event(
                                     EventType.LOBBY_READY,
                                     {
-                                        "ready": not ClientConfig.get_user().ready
+                                        "ready": not Clients.first().get_user().ready
                                     },
                                 )
                             )
@@ -77,9 +89,18 @@ class LobbyWindow(Window):
                         if button.rect.collidepoint(event.pos):
                             from .main_menu_window import MainMenuWindow
 
-                            NetworkClient.get_instance().disconnect()
+                            NetworkClient.first().disconnect()
                             if NetworkServer.get_instance().running:
                                 NetworkServer.get_instance().shutdown()
                             print("Reloading ...")
 
                             WindowManager.get_instance().activeWindow = MainMenuWindow()
+
+                case "Leaderboard":
+                    if event.type == pygame.MOUSEBUTTONUP:
+                        if button.rect.collidepoint(event.pos):
+                            from .leaderboard_window import LeaderboardWindow
+
+                            WindowManager.get_instance().activeWindow = (
+                                LeaderboardWindow()
+                            )

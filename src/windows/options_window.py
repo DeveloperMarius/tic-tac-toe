@@ -5,7 +5,9 @@ from .window_manager import Window, WindowManager
 from .components.button import Button
 from .components.menu_title import MenuTitle
 from .components.input import Input
-from ..game.config import ClientConfig
+from ..game.config import Clients
+from ..game.events import Event, EventType
+from ..game.network import NetworkClient
 
 
 class OptionsWindow(Window):
@@ -36,7 +38,7 @@ class OptionsWindow(Window):
             width=button_width,
             height=button_height,
             padding=(button_height - 38),
-            text=ClientConfig.get_username(),
+            text=Clients.first().get_username(),
         )
 
         self.menu_buttons = [
@@ -77,10 +79,10 @@ class OptionsWindow(Window):
             if not button.rect.collidepoint(event.pos):
                 continue
             elif button.text == "Save":
-                if ClientConfig.get_username() == self.username_input.text:
+                if Clients.first().get_username() == self.username_input.text:
                     continue
 
-                ClientConfig.set_username(self.username_input.text)
+                Clients.first().set_username(self.username_input.text)
                 # Implement success message
             elif button.text == "Back":
                 from .main_menu_window import MainMenuWindow
@@ -91,7 +93,7 @@ class OptionsWindow(Window):
 
         self.menu_buttons[0].color = (
             (99, 99, 99)
-            if ClientConfig.get_username() == self.username_input.text
+            if Clients.first().get_username() == self.username_input.text
             else (129, 215, 126)
         )
 

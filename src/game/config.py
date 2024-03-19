@@ -9,43 +9,51 @@ from src.models.user import LocalUser
 class ClientConfig:
 
     _eventmanager_instance: EventManager | None = None
-    _sessionmanager_instance: Database | None = None
+    _sessionmanager_instance: SessionManager | None = None
     _username: str | None = None
 
-    # {'wins': wins, 'losses': losses, 'draws': draws}
-    _statistics: dict | None = None
+    def set_username(self, username: str):
+        self._username = username
+
+    def get_username(self) -> str:
+        return self._username
+
+    def get_user(self) -> LocalUser | None:
+        return self.get_sessionmanager().get_user_by_username(self.get_username())
+
+    def get_eventmanager(self) -> EventManager:
+        if self._eventmanager_instance is None:
+            self._eventmanager_instance = EventManager()
+        return self._eventmanager_instance
+
+    def get_sessionmanager(self) -> SessionManager:
+        if self._sessionmanager_instance is None:
+            self._sessionmanager_instance = SessionManager()
+        return self._sessionmanager_instance
+
+
+class Clients:
+    _clients: List[ClientConfig] = []
 
     @staticmethod
-    def set_username(username: str):
-        ClientConfig._username = username
+    def first() -> ClientConfig:
+        if len(Clients._clients) == 0:
+            Clients.add_client()
+        return Clients._clients[0]
 
     @staticmethod
-    def get_username() -> str:
-        return ClientConfig._username
+    def second() -> ClientConfig:
+        if len(Clients._clients) == 1:
+            Clients.add_client()
+        return Clients._clients[1]
 
     @staticmethod
-    def set_statistics(statistics: dict):
-        ClientConfig._statistics = statistics
+    def add_client():
+        Clients._clients.append(ClientConfig())
 
     @staticmethod
-    def get_statistics() -> dict:
-        return ClientConfig._statistics
-
-    @staticmethod
-    def get_user() -> LocalUser | None:
-        return ClientConfig.get_sessionmanager().get_user_by_username(ClientConfig.get_username())
-
-    @staticmethod
-    def get_eventmanager() -> EventManager:
-        if ClientConfig._eventmanager_instance is None:
-            ClientConfig._eventmanager_instance = EventManager()
-        return ClientConfig._eventmanager_instance
-
-    @staticmethod
-    def get_sessionmanager() -> SessionManager:
-        if ClientConfig._sessionmanager_instance is None:
-            ClientConfig._sessionmanager_instance = SessionManager()
-        return ClientConfig._sessionmanager_instance
+    def clients() -> List[ClientConfig] | None:
+        return Clients._clients
 
 
 class ServerConfig:

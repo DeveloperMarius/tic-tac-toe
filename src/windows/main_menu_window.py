@@ -3,7 +3,7 @@ import pygame
 from .components.menu_title import MenuTitle
 from .window_manager import Window, WindowManager
 from .components.button import Button
-from ..game.config import ClientConfig
+from ..game.config import Clients
 
 
 class MainMenuWindow(Window):
@@ -49,11 +49,11 @@ class MainMenuWindow(Window):
             if not button.rect.collidepoint(event.pos):
                 continue
             if button.text == "Play Online":
-                if ClientConfig.get_username() is None:
+                if Clients.first().get_username() is None:
                     from random_username.generate import generate_username
                     from .options_window import OptionsWindow
 
-                    ClientConfig.set_username(generate_username(1)[0])
+                    Clients.first().set_username(generate_username(1)[0])
 
                     WindowManager.get_instance().activeWindow = OptionsWindow()
                     return

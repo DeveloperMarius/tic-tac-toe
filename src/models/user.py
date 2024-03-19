@@ -23,14 +23,17 @@ class LocalUser:
     _admin: bool = False
     _ready: bool = False
     _game_symbol: int | None = None
+    # {'wins': wins, 'loses': loses, 'draws': draws}
+    _statistics: dict | None = None
 
-    def __init__(self, id: str, username: str, admin: bool = False, db_id: int | None = None, ready: bool = False, game_symbol: int | None = None):
+    def __init__(self, id: str, username: str, admin: bool = False, db_id: int | None = None, ready: bool = False, game_symbol: int | None = None, statistics: dict | None = None):
         self._id = id
         self._username = username
         self._admin = admin
         self._db_id = db_id
         self._ready = ready
         self._game_symbol = game_symbol
+        self._statistics = statistics
 
     @property
     def id(self) -> str:
@@ -67,6 +70,14 @@ class LocalUser:
     @game_symbol.setter
     def game_symbol(self, value: int | None):
         self._game_symbol = value
+
+    @property
+    def statistics(self) -> dict | None:
+        return self._statistics
+
+    @statistics.setter
+    def statistics(self, value: dict | None):
+        self._statistics = value
 
     def __str__(self) -> str:
         return f"User(id={self.id!r}, db_id={self.db_id!r})"
