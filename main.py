@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import pygame
+from src.windows.notification_manager import NotificationManager
 from src.windows.window_manager import WindowManager
 from src.windows.main_menu_window import MainMenuWindow
 
@@ -30,10 +31,11 @@ class Main:
 
     def render(self):
         if WindowManager.get_instance().activeWindow is None:
-            print('Active window is None')
+            print("Active window is None")
             return
         self.window.fill((7, 12, 23))
         WindowManager.get_instance().activeWindow.draw(self.window)
+        NotificationManager.get_instance().draw(self.window)
         pygame.display.flip()
 
 

@@ -3,7 +3,7 @@ import os
 import socketio
 from src.models.chat_message import LocalChatMessage, ChatMessage
 from src.models.user import LocalUser
-from src.game.config import ClientConfig, ServerConfig, Clients
+from src.game.config import ServerConfig, Clients
 from src.game.events import Event, EventType
 import json
 from src.utils.json_encoder import ModelEncoder
@@ -12,6 +12,7 @@ from aiohttp import web
 import time
 import asyncio
 
+from src.windows.notification_manager import NotificationManager
 from src.windows.window_manager import WindowManager
 
 
@@ -53,15 +54,20 @@ class NetworkClient:
     def connect(self, host, port=7175):
         if self._connected:
             return
-        self._connected = True
         self.call_backs()
         self._register_default_events()
-        self._sio.connect(
-            f"http://{host}:{port}",
-            {"username": self.config.get_username()},
-            "authtoken",
-        )
-        self.send(Event(EventType.SYNC))
+        try:
+            self._sio.connect(
+                f"http://{host}:{port}",
+                {"username": self.config.get_username()},
+                "authtoken",
+            )
+            self._connected = True
+            self.send(Event(EventType.SYNC))
+        except Exception as _:
+            NotificationManager.get_instance().message = (
+                "Es konnte keine Verbindung zum Host hergestellt werden"
+            )
 
     def disconnect(self):
         self._sio.disconnect()
@@ -104,17 +110,14 @@ class NetworkClient:
             EventType.GAMEPLAY_START, lambda event: self._gameplay_start(event)
         )
         self.config.get_eventmanager().on(
-            # TODO Implement success message
             EventType.GAMEPLAY_MOVE_ACCEPTED,
             lambda event: print("Move accepted"),
         )
         self.config.get_eventmanager().on(
-            # TODO Implement error message
             EventType.GAMEPLAY_MOVE_DENIED,
-            lambda event: print("Move denied"),
+            lambda event: self._gameplay_move_denied(event),
         )
         self.config.get_eventmanager().on(
-            # TODO Implement finish message / back to menu
             EventType.GAMEPLAY_STOP,
             lambda event: self._gameplay_stop(event),
         )
@@ -134,15 +137,22 @@ class NetworkClient:
 
         WindowManager.get_instance().activeWindow = MultiplayerGameWindow()
 
+    def _gameplay_move_denied(self, event):
+        NotificationManager.get_instance().message = "This field is already taken"
+
     def _gameplay_stop(self, event):
         print("Game over")
         from ..windows.multiplayer_game_end_window import MultiplayerGameEndWindow
 
         WindowManager.get_instance().activeWindow = MultiplayerGameEndWindow(
             WindowManager.get_instance().activeWindow.tictactoe_field.field_rects,
-            self.config.get_sessionmanager()
-            .get_user(event.data["winners"][0])
-            .game_symbol if len(event.data["winners"]) < 2 else 3,
+            (
+                self.config.get_sessionmanager()
+                .get_user(event.data["winners"][0])
+                .game_symbol
+                if len(event.data["winners"]) < 2
+                else 3
+            ),
             self.config.get_user().game_symbol,
         )
 
@@ -289,7 +299,9 @@ class NetworkServer:
             username = headers["HTTP_USERNAME"]
 
             # Check if user is already playing
-            if ServerConfig.get_sessionmanager().exists_with_username_and_online(username):
+            if ServerConfig.get_sessionmanager().exists_with_username_and_online(
+                username
+            ):
                 return False
 
             # Apply user limit
@@ -362,8 +374,8 @@ class NetworkServer:
                     EventType.SYNC,
                     {
                         "users": ServerConfig.get_sessionmanager().users_all,
-                        "chat_messages": chat_messages
-                    }
+                        "chat_messages": chat_messages,
+                    },
                 ),
                 to=sid,
             )
@@ -396,7 +408,7 @@ class NetworkServer:
                 # Assign user symbols
                 for i in range(len(users)):
                     user_ = users[i]
-                    user_.game_symbol = i+1
+                    user_.game_symbol = i + 1
                     user_.ready = False
                     ServerConfig.get_sessionmanager().update_user(user_)
                     await self.send(Event(EventType.USER_UPDATE, {"user": user_}))

@@ -1,10 +1,12 @@
+import re
 import pygame
+
+from src.windows.notification_manager import NotificationManager
 
 from .window_manager import Window, WindowManager
 from .components.button import Button
 from .components.menu_title import MenuTitle
 from .components.ip_input import IPInput
-from ..game.config import Clients
 from ..game.network import NetworkClient, NetworkServer
 
 
@@ -62,16 +64,30 @@ class PlayOnlineWindow(Window):
                 if not button.rect.collidepoint(event.pos):
                     continue
                 if button.text == "Join":
-                    # todo check if valid ip
                     if self.menu_input.text == "Enter IP Address":
+                        NotificationManager.get_instance().message = (
+                            "Bitte geben Sie eine IP-Adresse ein"
+                        )
                         return
+
+                    if not re.match(
+                        r"^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$",
+                        self.menu_input.text,
+                    ):
+                        NotificationManager.get_instance().message = (
+                            "Das IP-Format ist nicht korrekt"
+                        )
+                        return
+
                     NetworkClient.first().connect(self.menu_input.text)
-                    from .lobby_window import LobbyWindow
-                    WindowManager.get_instance().activeWindow = LobbyWindow()
+                    if NetworkClient.first()._connected:
+                        from .lobby_window import LobbyWindow
+
+                        WindowManager.get_instance().activeWindow = LobbyWindow()
                 elif button.text == "Host":
 
                     NetworkServer.get_instance().start_server()
-                    NetworkClient.first().connect('127.0.0.1')
+                    NetworkClient.first().connect("127.0.0.1")
 
                     from .lobby_window import LobbyWindow
 

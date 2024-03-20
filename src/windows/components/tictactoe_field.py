@@ -1,4 +1,6 @@
 import pygame
+
+from src.windows.notification_manager import NotificationManager
 from .base_component import BaseComponent
 
 
@@ -109,8 +111,7 @@ class TicTacToeField(BaseComponent):
                 continue
 
             if field_rect.checked != 0:
-                # TODO: Add a message that the field is already checked
-                print("Field already checked")
+                NotificationManager.get_instance().message = "Field is already taken"
                 break
 
             handle_turn_result = self.handle_turn(i, self.field_rects)

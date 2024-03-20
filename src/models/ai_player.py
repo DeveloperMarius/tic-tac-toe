@@ -1,4 +1,7 @@
+from concurrent.futures import ThreadPoolExecutor
 import random
+
+from ..windows.notification_manager import NotificationManager
 
 
 class DummyAIPlayer:
@@ -85,7 +88,9 @@ class SmartAIPlayer:
             return best_score
 
     def make_move(self, game):
+        NotificationManager.get_instance().long_information("AI is thinking...")
         index = self.find_best_move(game)
+        NotificationManager.get_instance().reset()
         print("Berechneter Index KI: ", index)
         return index
 
