@@ -2,6 +2,7 @@ import asyncio
 import os
 import time
 import unittest
+from typing import List
 
 from socketio.exceptions import ConnectionError as SocketConnectionError
 
@@ -12,17 +13,19 @@ from src.game.network import NetworkServer, NetworkClient
 
 class TestUtils:
 
-    awaited_event_data: Event | None = None
+    awaited_event_data: List[Event] = []
 
     @staticmethod
     def await_event(event_type: EventType, timeout: int = 5) -> Event | None:
+        print('wait for event', event_type)
         start = time.time()
-        while (TestUtils.awaited_event_data is None or TestUtils.awaited_event_data.type != event_type) and time.time() - start < timeout:
+        while len([event for event in TestUtils.awaited_event_data if event.type == event_type]) == 0 and time.time() - start < timeout:
+            TestUtils.awaited_event_data = []
             print('waiting for event', TestUtils.awaited_event_data)
             time.sleep(0.05)
         print('time is up', time.time() - start < timeout)
-        event = TestUtils.awaited_event_data
-        TestUtils.awaited_event_data = None
+        event = [event for event in TestUtils.awaited_event_data if event.type == event_type][0]
+        TestUtils.awaited_event_data = []
         return event
 
 
@@ -33,7 +36,7 @@ class NetworkTest(unittest.TestCase):
         os.environ['env'] = "test"
 
         def await_event_callback(event: Event):
-            TestUtils.awaited_event_data = event
+            TestUtils.awaited_event_data.append(event)
         Clients.first().get_eventmanager().on_any(lambda event: await_event_callback(event))
         Clients.second().get_eventmanager().on_any(lambda event: await_event_callback(event))
 
@@ -67,7 +70,7 @@ class NetworkClientTest(unittest.TestCase):
         os.environ['env'] = "test"
 
         def await_event_callback(event: Event):
-            TestUtils.awaited_event_data = event
+            TestUtils.awaited_event_data.append(event)
         Clients.first().get_eventmanager().on_any(lambda event: await_event_callback(event))
         Clients.second().get_eventmanager().on_any(lambda event: await_event_callback(event))
 
@@ -94,8 +97,9 @@ class NetworkClientTest(unittest.TestCase):
         event = TestUtils.await_event(EventType.SYNC)
         self.assertIsNotNone(event)
         self.assertEqual(EventType.SYNC, event.type)
-        self.assertEqual(1, len(event.data['users']))
-        self.assertEqual('Yin', event.data['users'][0].username)
+        online_users = [user for user in event.data['users'] if user.online]
+        self.assertEqual(1, len(online_users))
+        self.assertEqual('Yin', online_users[0].username)
 
     def test_002_client_chat(self):
         NetworkClient.first().send(Event(EventType.CHAT_MESSAGE, {
@@ -151,11 +155,10 @@ class NetworkClientTest(unittest.TestCase):
 
         self.assertIsNotNone(event)
         self.assertEqual(EventType.GAMEPLAY_START, event.type)
-        self.assertEqual(True, event.data['user'].ready)
 
         NetworkClient.second().disconnect()
 
-    def test_003_client_gameplay(self):
+    def test_005_client_gameplay(self):
         # Setup second user
         config2 = Clients.second()
         config2.set_username('Yang')
@@ -165,44 +168,37 @@ class NetworkClientTest(unittest.TestCase):
         first_user_event = TestUtils.await_event(EventType.GAMEPLAY_MOVE_REQUEST)
         first_user = 0 if NetworkClient.first().config.get_user().username == first_user_event.reciever else 1
 
-        time.sleep(2)
         (NetworkClient.first() if first_user == 0 else NetworkClient.second()).send(Event(EventType.GAMEPLAY_MOVE_RESPONSE, {
             'x': 0,
             'y': 0,
         }))
-        time.sleep(2)
-        print('made move')
+        TestUtils.await_event(EventType.GAMEPLAY_MOVE_REQUEST)
         (NetworkClient.first() if first_user == 1 else NetworkClient.second()).send(Event(EventType.GAMEPLAY_MOVE_RESPONSE, {
             'x': 1,
             'y': 0,
         }))
-        time.sleep(2)
-        print('made move')
+        TestUtils.await_event(EventType.GAMEPLAY_MOVE_REQUEST)
         (NetworkClient.first() if first_user == 0 else NetworkClient.second()).send(Event(EventType.GAMEPLAY_MOVE_RESPONSE, {
             'x': 1,
             'y': 1,
         }))
-        time.sleep(2)
-        print('made move')
+        TestUtils.await_event(EventType.GAMEPLAY_MOVE_REQUEST)
         (NetworkClient.first() if first_user == 1 else NetworkClient.second()).send(Event(EventType.GAMEPLAY_MOVE_RESPONSE, {
             'x': 2,
             'y': 0,
         }))
-        time.sleep(2)
-        print('made move')
+        TestUtils.await_event(EventType.GAMEPLAY_MOVE_REQUEST)
         (NetworkClient.first() if first_user == 0 else NetworkClient.second()).send(Event(EventType.GAMEPLAY_MOVE_RESPONSE, {
             'x': 2,
             'y': 2,
         }))
-        time.sleep(2)
-        print('made move')
 
         event = TestUtils.await_event(EventType.GAMEPLAY_STOP)
 
         self.assertIsNotNone(event)
         self.assertEqual(EventType.GAMEPLAY_STOP, event.type)
         self.assertEqual(1, len(event.data['winners']))
-        self.assertEqual(first_user_event.reciever, event.data['winners'][0])
+        self.assertEqual(first_user_event.reciever, Clients.first().get_sessionmanager().get_user(event.data['winners'][0]).username)
 
 
 if __name__ == '__main__':

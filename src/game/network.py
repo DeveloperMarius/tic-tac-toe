@@ -136,6 +136,8 @@ class NetworkClient:
 
     def _gameplay_stop(self, event):
         print("Game over")
+        if os.getenv("env") == "test":
+            return
         from ..windows.multiplayer_game_end_window import MultiplayerGameEndWindow
 
         WindowManager.get_instance().activeWindow = MultiplayerGameEndWindow(
@@ -519,6 +521,7 @@ class NetworkServer:
                 await self.send(
                     Event(EventType.GAMEPLAY_STOP, {"winners": game.players})
                 )
+                ServerConfig.delete_game()
                 return
             if game.check_winner():
                 game.finished = True
@@ -553,6 +556,7 @@ class NetworkServer:
                 await self.send(
                     Event(EventType.GAMEPLAY_STOP, {"winners": [game.current_player]})
                 )
+                ServerConfig.delete_game()
                 return
 
             # Select user to move next
@@ -578,4 +582,35 @@ class NetworkServer:
             # Trigger event
             await self.send(Event(EventType.USER_LEAVE, {"user": user}), skip_sid=sid)
 
+            if ServerConfig.get_game() is not None:
+                game = ServerConfig.get_game()
+                game.finished = True
+                ServerConfig.get_database().game_over(game)
+                winner = None
+                for player in game.players:
+                    player_user = ServerConfig.get_sessionmanager().get_user(player)
+                    if player == sid:
+                        ServerConfig.get_database().game_over_update_user(
+                            game, player_user, 1
+                        )
+                    else:
+                        winner = player_user
+                        ServerConfig.get_database().game_over_update_user(
+                            game, player_user, 2
+                        )
+                    player_user.statistics = (
+                        ServerConfig.get_database().get_statistics(
+                            player_user.db_id
+                        )
+                    )
+                    ServerConfig.get_sessionmanager().update_user(player_user)
+                    await self.send(
+                        Event(EventType.USER_UPDATE, {"user": player_user})
+                    )
+
+                    await self.send(
+                        Event(EventType.GAMEPLAY_STOP, {"winners": [winner.id]})
+                    )
+
+                ServerConfig.delete_game()
             return True
