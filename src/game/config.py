@@ -49,7 +49,9 @@ class Clients:
 
     @staticmethod
     def add_client():
-        Clients._clients.append(ClientConfig())
+        config = ClientConfig()
+        Clients._clients.append(config)
+        return config
 
     @staticmethod
     def clients() -> List[ClientConfig] | None:

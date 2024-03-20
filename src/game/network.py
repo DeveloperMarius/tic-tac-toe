@@ -3,7 +3,7 @@ import os
 import socketio
 from src.models.chat_message import LocalChatMessage, ChatMessage
 from src.models.user import LocalUser
-from src.game.config import ClientConfig, ServerConfig, Clients
+from src.game.config import ServerConfig, Clients
 from src.game.events import Event, EventType
 import json
 from src.utils.json_encoder import ModelEncoder
@@ -135,7 +135,6 @@ class NetworkClient:
         WindowManager.get_instance().activeWindow = MultiplayerGameWindow()
 
     def _gameplay_stop(self, event):
-        print("Game over")
         if os.getenv("env") == "test":
             return
         from ..windows.multiplayer_game_end_window import MultiplayerGameEndWindow
@@ -163,11 +162,10 @@ class NetworkClient:
     def call_backs(self):
         @self._sio.event
         def connect():
-            print("connection established")
+            pass
 
         @self._sio.on("*")
         def any_event(event, data):
-            print("message received with ", event, data)
             parsed_data = json.loads(data)
             if "user" in parsed_data:
                 parsed_data["user"] = LocalUser(**parsed_data["user"])
@@ -210,7 +208,7 @@ class NetworkClient:
 
         @self._sio.event
         def disconnect():
-            print("disconnected from server")
+            pass
 
     def send(self, event: Event):
         self._sio.emit(event.type.value, event.data)
@@ -252,7 +250,6 @@ class NetworkServer:
         asyncio.run(self._start_server2())
 
     async def _start_server2(self):
-        print("Starting server")
         users_all = []
         for user in ServerConfig.get_database().users():
             local_user = LocalUser(None, user.username, False, user.id)
@@ -287,7 +284,6 @@ class NetworkServer:
     def call_backs(self):
         @self._sio.event
         async def connect(sid, headers, auth):
-            print("connect ", sid, headers, auth)
             username = headers["HTTP_USERNAME"]
 
             # Check if user is already playing
@@ -471,7 +467,6 @@ class NetworkServer:
 
             # Check if game is already finished
             if game.finished:
-                print("GAME IS ALREADY FINISHED")
                 return
 
             # Check if user is allowed to move
@@ -565,7 +560,6 @@ class NetworkServer:
 
         @self._sio.event
         async def disconnect(sid):
-            print("disconnect ", sid)
             # Check if user is in local user cache
             if not ServerConfig.get_sessionmanager().exists_with_id(sid):
                 return False
