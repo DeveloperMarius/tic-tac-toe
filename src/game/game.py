@@ -137,21 +137,3 @@ class Game:
             index = self.current_player.make_move(self)
             fields = self.handle_turn(index, fields)
         return fields
-
-    def check_winner2(self) -> int:
-
-        if self.hoizontal_win():
-            return self.current_player.symbol
-
-        if self.vertical_win():
-            return self.current_player.symbol
-
-        if self.diagonal_win():
-            return self.current_player.symbol
-
-        # check if board is full
-        # if all(self.board[row][col] != 0 for row in range(3) for col in range(3)):
-        # print("The game ended in a draw")
-        # return 1
-
-        return 0
