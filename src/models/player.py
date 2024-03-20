@@ -13,10 +13,8 @@ class Player:
             # handle auslösen
             game.handle_turn(index, game.board)
 
-            # TODO: Check wenn das Spiel vorbei ist
             if game.check_winner():
                 self.update_game_stats(winner=True)
-                # TODO: Gewinnmeldung
             else:
                 self.update_game_stats(winner=False)
 

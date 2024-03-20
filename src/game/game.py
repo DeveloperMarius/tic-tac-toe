@@ -135,7 +135,6 @@ class Game:
     def handle_ai_first(self, fields: list[FieldRect]):
         if isinstance(self.current_player, (DummyAIPlayer, SmartAIPlayer)):
             index = self.current_player.make_move(self)
-            print("AI is making a first move - is random")
             fields = self.handle_turn(index, fields)
         return fields
 

@@ -12,19 +12,12 @@ class MultiplayerGameWindow(Window):
     def __init__(self):
         super().__init__()
 
-        # self.player_ids = [user._id for user in Clients.first().get_sessionmanager().users]
-
-        # TODO:
-        # - Create ClientGame
-        # - Add clientGameTurnHandle() to send network requests to ServerGame on Host
-        # self.server_game = ServerGame(self.player_ids)
-
-        # TODO: Delete this and replace with clientGameTurnHandle
         def handle_tictactoefield(index: int, fields: list[FieldRect]):
-            NetworkClient.first().send(Event(EventType.GAMEPLAY_MOVE_RESPONSE, {
-                'x': index % 3,
-                'y': index // 3
-            }))
+            NetworkClient.first().send(
+                Event(
+                    EventType.GAMEPLAY_MOVE_RESPONSE, {"x": index % 3, "y": index // 3}
+                )
+            )
             return fields
 
         self.tictactoe_field = TicTacToeField(
