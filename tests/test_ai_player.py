@@ -23,9 +23,9 @@ class TestAIPlayers(unittest.TestCase):
     def test_smart_ai_best_move(self):
         smart_ai = SmartAIPlayer("Smart AI", 1)  # Smart Ai has X
         # Set the board to a state in which Smart AI can win
-        self.mock_game.board = [[1, 2, 0], [0, 1, 0], [2, 0, 0]]
+        self.mock_game.board = [[1, 2, 0], [1, 2, 0], [0, 0, 0]]
         index = smart_ai.make_move(self.mock_game)
-        expected_index = 8  # best position to win
+        expected_index = 6  # best position to win
         self.assertEqual(
             index, expected_index, "Smart AI should choose the best move to win"
         )
