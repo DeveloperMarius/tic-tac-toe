@@ -25,7 +25,7 @@ class LeaderboardRow:
             border_radius=10,
         )
         pygame.font.init()
-        font = pygame.font.SysFont("Comic Sans MS", 36)
+        font = pygame.font.SysFont(pygame.font.get_default_font(), 36)
         text = font.render(
             (
                 (f"{self.index}. {self.player_stats['username']}")

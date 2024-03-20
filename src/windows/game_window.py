@@ -60,8 +60,8 @@ class GameWindow(Window):
         ]
 
         self.winner = None
-        self.font = pygame.font.SysFont("Comic Sans MS", 36)
-        self.title_font = pygame.font.SysFont("Comic Sans MS", 54)
+        self.font = pygame.font.SysFont(pygame.font.get_default_font(), 36)
+        self.title_font = pygame.font.SysFont(pygame.font.get_default_font(), 54)
 
     def handleEvent(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:

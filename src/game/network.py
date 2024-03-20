@@ -141,7 +141,6 @@ class NetworkClient:
         NotificationManager.get_instance().message = "This field is already taken"
 
     def _gameplay_stop(self, event):
-        print("Game over")
         from ..windows.multiplayer_game_end_window import MultiplayerGameEndWindow
 
         WindowManager.get_instance().activeWindow = MultiplayerGameEndWindow(
@@ -155,6 +154,8 @@ class NetworkClient:
             ),
             self.config.get_user().game_symbol,
         )
+
+        ServerConfig.delete_game()
 
     def _gameplay_move_accepted(self, event):
         if os.getenv("env") == "test":

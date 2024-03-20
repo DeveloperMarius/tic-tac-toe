@@ -11,6 +11,8 @@ class Button:
         self.height = height
         self.color = color
 
+        self.draw()
+
     def draw(self):
         self.rect = pygame.draw.rect(
             self.screen,
@@ -19,7 +21,7 @@ class Button:
             border_radius=10,
         )
         pygame.font.init()
-        font = pygame.font.SysFont("Comic Sans MS", 36)
+        font = pygame.font.SysFont(pygame.font.get_default_font(), 36)
         text = font.render(self.text, True, (255, 255, 255))
         text_rect = text.get_rect(
             center=(self.x + self.width / 2, self.y + self.height / 2)

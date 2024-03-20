@@ -97,7 +97,7 @@ class OptionsWindow(Window):
             else (129, 215, 126)
         )
 
-        username_label = pygame.font.SysFont("arial", 20).render(
+        username_label = pygame.font.SysFont(pygame.font.get_default_font(), 24).render(
             "Username:", True, (255, 255, 255)
         )
         self.screen.blit(

@@ -54,7 +54,7 @@ class NotificationManager:
             s.fill((0, 0, 0, 160))
             screen.blit(s, (0, 0))
 
-            font = pygame.font.SysFont("Comic Sans MS", 36)
+            font = pygame.font.SysFont(pygame.font.get_default_font(), 36)
             text = font.render(self._message, True, self._color)
             text_rect = text.get_rect()
             text_rect.center = (

@@ -73,7 +73,7 @@ class Input:
         )
 
         pygame.font.init()
-        font = pygame.font.SysFont("Comic Sans MS", 36)
+        font = pygame.font.SysFont(pygame.font.get_default_font(), 36)
         text = font.render(self.text, True, (255, 255, 255))
 
         text_rect = text.get_rect(

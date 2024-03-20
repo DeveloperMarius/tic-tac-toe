@@ -28,16 +28,16 @@ class LobbyPane(BaseComponent):
         self.text_color = (255, 255, 255)
         self.font_size = 24
         self.padding = 15
-        self.font = pygame.font.SysFont("Helvetica", self.font_size)
+        self.font = pygame.font.SysFont(pygame.font.get_default_font(), self.font_size)
 
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
 
     def draw(self):
         """Draw lobby pane component"""
         # Draw Title
-        title_font = pygame.font.SysFont("Helvetica", 48, True)
+        title_font = pygame.font.SysFont(pygame.font.get_default_font(), 48)
         title_text = title_font.render(
-            f"Lobby {socket.gethostbyname_ex(socket.gethostname())[-1]}",
+            f"Lobby {socket.gethostbyname_ex(socket.gethostname())[-1][0]}",
             True,
             (255, 255, 255),
         )

@@ -24,7 +24,7 @@ class ChatPane(BaseComponent):
         self.background_color = (20, 33, 61)
         self.text_color = (255, 255, 255)
         self.font_size = 20
-        self.font = pygame.font.SysFont("Helvetica", self.font_size)
+        self.font = pygame.font.SysFont(pygame.font.get_default_font(), self.font_size)
 
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
 
@@ -98,7 +98,7 @@ class ChatPane(BaseComponent):
 
         self.input.draw()
 
-        title_font = pygame.font.SysFont("Helvetica", 36, True)
+        title_font = pygame.font.SysFont(pygame.font.get_default_font(), 36)
         rendered_name = title_font.render(
             "Chat",
             True,

@@ -54,7 +54,7 @@ class MultiplayerGameEndWindow(Window):
             ),
         ]
 
-        self.title_font = pygame.font.SysFont("Comic Sans MS", 54)
+        self.title_font = pygame.font.SysFont(pygame.font.get_default_font(), 54)
 
     def draw(self, _: pygame.Surface):
         self.tictactoe_field.draw()
