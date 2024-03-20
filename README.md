@@ -62,6 +62,11 @@ Aufgabenverteilung Sprint 3:
 
 ### Week 4
 
+### Rollen
+- Projektmanager: Marius
+- SCRUM Master: Veronika
+- Entwickler: Sebastian
+
 #### 4. Sprint (23.02.2024 - 01.03.2024)
 Erfüllte Aufgaben von Sprint 3:
 - Marius: Kommunikation
@@ -81,6 +86,11 @@ Aufgabenverteilung Sprint 4:
 
 ### Week 5
 
+### Rollen
+- Projektmanager: Veronika
+- SCRUM Master: Sebastian
+- Entwickler: Marius
+
 #### 5. Sprint (01.03.2024 - 08.03.2024)
 Erfüllte Aufgaben von Sprint 4:
 - Marius: Neue Events implementiert, Datenbank optimiert, Chat Messaging, Client-Server-Kommunikation optimiert, große Fehler gefixt
@@ -97,6 +107,11 @@ Aufgabenverteilung Sprint 5:
 
 ### Week 6
 
+### Rollen
+- Projektmanager: Sebastian
+- SCRUM Master: Marius
+- Entwickler: Veronika
+
 #### 6. Sprint (08.03.2024 - 12.03.2024)
 Erfüllte Aufgaben von Sprint 5:
 - Marius: Netzwerk Tests
@@ -108,6 +123,11 @@ Aufgabenverteilung Sprint 6:
 
 ### Week 7
 
+### Rollen
+- Projektmanager: Marius
+- SCRUM Master: Veronika
+- Entwickler: Sebastian
+
 #### 7. Sprint (12.03.2024 - 19.03.2024)
 Erfüllte Aufgaben von Sprint 6:
 - Alle: Alles gemerged und Bugs gefixt
@@ -118,6 +138,11 @@ Aufgabenverteilung Sprint 8:
 - Veronika: Unit Tests für Winner-Erkennung. Tests für die KIs, KI Optimierung
 
 ### Week 8
+
+### Rollen
+- Projektmanager: Veronika
+- SCRUM Master: Sebastian
+- Entwickler: Marius
 
 #### 8. Sprint (19.03.2024 - 21.03.2024)
 Erfüllte Aufgaben von Sprint 8:
